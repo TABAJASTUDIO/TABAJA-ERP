@@ -1,23 +1,18 @@
-TABAJA ERP V1.0 — PERSONAL EDITION
+TABAJA ERP V1.1
 
-HOW TO RUN
-1. Extract the ZIP file.
-2. Open the folder.
-3. Double-click index.html.
-4. Login with:
-   User Name: admin
-   Password: 1234
+Login:
+User Name: admin
+Password: 1234
 
-CURRENT FEATURES
+What is active:
 - Login
-- Create company
-- Select/open company
-- Gateway screen
-- Currency and financial year settings
-- Inventory and cost centre options
+- Create, edit, open and delete companies
+- Complete company setup fields
+- Company selection
+- Tally-style Gateway
+- Company feature summary
 - Local browser storage
-- Backup and restore as JSON
+- Backup and restore
+- Keyboard shortcuts F4–F9 placeholders
 
-IMPORTANT
-Data is stored in the browser on the same computer and browser.
-Use Backup Data regularly.
+Open index.html or upload all files to the root of the GitHub repository.
