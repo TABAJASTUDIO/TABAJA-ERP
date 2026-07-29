@@ -1,18 +1,15 @@
-TABAJA ERP V1.1
+Tabaja ERP V2
+Login: admin / 1234
 
-Login:
-User Name: admin
-Password: 1234
-
-What is active:
-- Login
-- Create, edit, open and delete companies
-- Complete company setup fields
-- Company selection
+Functional in this build:
+- Create/Open company
 - Tally-style Gateway
-- Company feature summary
+- Create menu
+- Create Group
+- Create Ledger
+- Chart of Accounts
+- Opening balances
 - Local browser storage
-- Backup and restore
-- Keyboard shortcuts F4–F9 placeholders
+- Backup/Restore
 
-Open index.html or upload all files to the root of the GitHub repository.
+Upload index.html, app.js, styles.css to the root of the GitHub repository and replace old files.
