@@ -1,15 +1,11 @@
-Tabaja ERP V2
+TABAJA ERP V2.1
+
+Keyboard-first update:
+- Arrow Up / Down moves through Gateway and Create menus
+- Enter opens the highlighted item
+- Escape returns one screen back
+- Enter moves through form fields
+- Ctrl+A saves forms
+- Mouse remains optional
+
 Login: admin / 1234
-
-Functional in this build:
-- Create/Open company
-- Tally-style Gateway
-- Create menu
-- Create Group
-- Create Ledger
-- Chart of Accounts
-- Opening balances
-- Local browser storage
-- Backup/Restore
-
-Upload index.html, app.js, styles.css to the root of the GitHub repository and replace old files.
