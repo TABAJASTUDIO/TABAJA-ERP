@@ -49,3 +49,12 @@ button:focus,input:focus,select:focus,textarea:focus{outline:2px solid #f5b13f;o
 .ve-functions{width:auto!important;min-width:0;height:100%;border-left:0!important;display:flex;flex-direction:column;background:#d9e6e9}.ve-functions button{height:33px!important;min-height:33px;padding:5px 7px!important;text-align:left;font-size:12px!important}.ve-functions .fp-gap{height:18px}.ve-functions .fp-bottom{flex:1}.ve-functions .permanent-selected{background:#edbd72!important}.ve-functions .disabled{color:#888}
 .quit-box button.active{background:#edcc8b!important;outline:2px solid #805d20}
 @media(max-width:1000px){.voucher-tally-screen{grid-template-columns:minmax(500px,1fr) 260px 165px}.voucher-pair-row{grid-template-columns:130px 150px 40px 100px}.voucher-single-row{grid-template-columns:130px minmax(160px,260px)}.voucher-balance{grid-template-columns:130px 260px}}
+/* Alpha 4 refinements: compact classic typography, quick-create and clean list lifecycle */
+.voucher-tally-screen{font-family:"Arial Narrow",Tahoma,Arial,sans-serif;font-size:10.5px;letter-spacing:-.08px}
+.voucher-caption{font-size:9.5px;height:16px}.voucher-topline{height:19px}.voucher-date-block{top:39px;font-size:10px}
+.voucher-entry-area{padding-top:4px}.voucher-pair-row,.voucher-single-row{min-height:19px}.voucher-balance{height:15px}
+.ve-cell{height:17px;padding:1px 3px;font-size:10.5px}.voucher-item-head{height:20px}.voucher-item-row{min-height:19px}
+.ve-list-row{min-height:16px;padding:1px 6px;font-size:10px}.ve-list-title{height:19px;padding:2px 5px;font-size:10px}.ve-list-end{padding:3px 6px}
+.ve-list-row.create-row{font-style:italic;border-top:1px solid #738d92}.ve-list-row.create-row span{font-weight:bold}
+.ve-functions button{height:29px!important;min-height:29px;font-size:10.5px!important;padding:3px 6px!important}
+.quick-master{display:grid;gap:7px;padding:12px;min-width:360px}.quick-master label{display:grid;grid-template-columns:140px 1fr;align-items:center;gap:8px}.quick-master input,.quick-master select{height:24px;border:1px solid #7e8c92;padding:2px 5px;font:inherit}.quick-master small{margin-top:5px;border-top:1px solid #aaa;padding-top:6px}

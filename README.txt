@@ -1,10 +1,9 @@
-Tabaja ERP V2.4 — Voucher Engine Alpha 3
+Tabaja ERP V2.4 Voucher Engine Alpha 4
 
-Test focus:
-1. Open Vouchers. Purchase remains highlighted without using the mouse.
-2. Initial cursor is on Supplier Invoice No., matching Tally.
-3. Enter moves through Date, Party A/c, Purchase Ledger, and Stock Item.
-4. Ledger/Stock list appears in the middle-right panel according to the active cursor.
-5. Arrow keys + Enter select entries.
-6. Esc closes an open list first. Esc again opens Quit Voucher; Esc/N selects No and returns focus.
-7. Voucher canvas is intentionally mostly blank, with one active row/cell at a time.
+Changes:
+- Ledger/stock list closes immediately after selection.
+- Next field does not reopen the list until the user starts typing.
+- Smaller classic Tally-like typography and tighter row spacing.
+- Create Ledger / Create Stock Item directly from a missing name in the voucher.
+- New master returns to the same voucher, fills the name, and continues to the next field.
+- Voucher date is one shared value: manual Date field or F2 updates the date and weekday at the top.
