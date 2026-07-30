@@ -273,3 +273,17 @@ button:focus,input:focus,select:focus,textarea:focus{outline:2px solid #f5b13f;o
   .voucher-single-row,.voucher-balance{grid-template-columns:128px minmax(200px,285px)}
   .voucher-narration{width:min(580px,calc(100% - 320px));min-width:360px}
 }
+
+/* Alpha 10 — multi-item voucher grid and field-level Escape behavior */
+#voucherCommittedRows{display:block}
+.voucher-committed-row{min-height:35px}
+.voucher-committed-row .ve-static{height:19px;line-height:19px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.voucher-committed-row .ve-static.right{text-align:right}
+.voucher-active-item-row{min-height:35px}
+.voucher-context-panel .ve-list-row:has(span:first-child){min-height:24px}
+.voucher-end-list{cursor:default}
+@media(max-height:720px){
+  .voucher-committed-row,.voucher-active-item-row{min-height:31px}
+  .voucher-item-name-cell,.voucher-qty-cell{min-height:31px}
+  .voucher-empty-space{min-height:8px}
+}

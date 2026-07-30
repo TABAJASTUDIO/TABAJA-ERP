@@ -1,0 +1,16 @@
+TABAJA ERP — ALPHA 10 TESTING
+
+Main changes:
+1. Multiple stock-item lines in one Purchase Voucher.
+2. After Rate, Enter completes the line and opens a new blank item line.
+3. End of List is selectable in the Stock Item list and moves to Narration.
+4. Escape while editing cancels only the current uncommitted edit.
+5. Escape without a changed value moves to the previous field without deleting it.
+6. Escape from Narration returns to the last item's Rate while preserving Item, Quantity and Rate.
+7. A fresh voucher is still empty after leaving and entering again.
+
+Suggested test:
+- Enter two or three items.
+- Choose End of List.
+- Type Narration, press Esc once to cancel its text, then Esc again to return to last Rate.
+- Continue Esc through Quantity and Item and confirm values remain.
