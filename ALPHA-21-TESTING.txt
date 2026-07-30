@@ -1,0 +1,20 @@
+TABAJA ERP — ALPHA 21
+
+This build replaces the broken blank-item-row Escape path.
+
+Required test:
+1. Enter Purchase Ledger.
+2. Add one or more Stock Items.
+3. Reach the empty yellow Stock Item row / End of List.
+4. Press Esc once.
+
+Expected result:
+- The immediately preceding completed Stock Item returns into the yellow row.
+- Focus remains on that Stock Item.
+- It must NOT jump to Purchase Ledger.
+
+Create keyboard control:
+- Stock list opens on End of List.
+- Arrow Up from End of List selects the separate Create action.
+- Enter opens Stock Item Creation.
+- Arrow Down returns from Create to End of List.
