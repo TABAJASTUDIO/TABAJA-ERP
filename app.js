@@ -27,41 +27,101 @@ function ledgerList(mode='display'){document.getElementById('ov')?.remove();S.sc
 function ledgerDisplay(id){document.getElementById('ov')?.remove();S.screen='ledgerDisplay';let d=data(),l=d.ledgers.find(x=>x.id===id),g=d.groups.find(x=>x.id===l.groupId),vs=d.vouchers.filter(v=>v.lines?.some(x=>x.ledgerId===id));let signed=(l.balanceType==='Cr'?-1:1)*Number(l.opening||0);let current=vs.reduce((sum,v)=>sum+v.lines.filter(x=>x.ledgerId===id).reduce((a,x)=>a+Number(x.debit||0)-Number(x.credit||0),0),0);let closing=signed+current;app.innerHTML=shell(company().name,`<main class="hub ledger-page"><div class="report-head"><h2>Ledger Vouchers</h2><div><b>Ledger: ${esc(l.name)}</b><br><small>Under: ${esc(g?.name||'')}</small></div></div><table class="table"><thead><tr><th>Date</th><th>Particulars</th><th>Vch Type</th><th>Vch No.</th><th>Debit</th><th>Credit</th></tr></thead><tbody>${vs.length?vs.map(v=>`<tr><td>${esc(v.date)}</td><td>${esc(v.particulars||'')}</td><td>${esc(v.type||'')}</td><td>${esc(v.number||'')}</td><td class="right">${Number(v.debit||0).toFixed(2)}</td><td class="right">${Number(v.credit||0).toFixed(2)}</td></tr>`).join(''):`<tr><td colspan="6" class="empty-row">No voucher entries yet</td></tr>`}</tbody></table><div class="balances"><div>Opening Balance: <b>${Math.abs(signed).toFixed(2)} ${signed<0?'Cr':'Dr'}</b></div><div>Current Total: <b>${Math.abs(current).toFixed(2)} ${current<0?'Cr':'Dr'}</b></div><div>Closing Balance: <b>${Math.abs(closing).toFixed(2)} ${closing<0?'Cr':'Dr'}</b></div></div></main>`)}
 function chart(){S.screen='chart';let d=data();let rows=d.groups.map(g=>{let ls=d.ledgers.filter(l=>l.groupId===g.id);return `<tr><td><b>${esc(g.name)}</b>${g.system?' <span class="badge">System</span>':''}</td><td>${esc(g.parent)}</td><td>${esc(g.nature)}</td><td>${ls.length}</td></tr>${ls.map(l=>`<tr><td style="padding-left:35px">↳ ${esc(l.name)}</td><td>${esc(g.name)}</td><td>Ledger</td><td class="right">${l.opening.toFixed(2)} ${esc(l.balanceType)}</td></tr>`).join('')}`}).join('');app.innerHTML=shell(company().name,`<main class="hub"><h2>Chart of Accounts</h2><table class="table"><thead><tr><th>Name</th><th>Under</th><th>Type / Nature</th><th>Count / Opening</th></tr></thead><tbody>${rows}</tbody></table></main>`)}
 
-const V={type:'Purchase',mode:'Item Invoice',optional:false,postDated:false,focusId:'vchParty'};
+const V={type:'Purchase',mode:'Item Invoice',optional:false,postDated:false,activeCell:0,values:{supplierNo:'',supplierDate:'',party:'',purchaseLedger:'',item:'',qty:'',rate:'',amount:'',narration:''}};
+const VOUCHER_CELLS=[
+ {key:'supplierNo',label:'Supplier Invoice No.',kind:'text'},
+ {key:'supplierDate',label:'Date',kind:'date'},
+ {key:'party',label:'Party A/c name',kind:'ledger',hint:'Type to search ledgers'},
+ {key:'purchaseLedger',label:'Purchase ledger',kind:'ledger',hint:'Type to search ledgers'},
+ {key:'item',label:'Name of Item',kind:'text',hint:'Stock Item engine comes next'},
+ {key:'qty',label:'Quantity',kind:'number'},
+ {key:'rate',label:'Rate',kind:'number'},
+ {key:'amount',label:'Amount',kind:'number'},
+ {key:'narration',label:'Narration',kind:'text'}
+];
 function voucherEntry(){
  document.getElementById('ov')?.remove();S.screen='voucher';
- const c=company();
- app.innerHTML=shell(c.name,`<main class="voucher-screen">
-  <section class="voucher-main">
-   <div class="voucher-heading"><b>${esc(V.type)} Voucher</b><span>No. <input id="vchNo" value="Auto" readonly></span></div>
-   <div class="voucher-date"><span id="vchDate">${new Date().toLocaleDateString('en-GB')}</span><small>${new Date().toLocaleDateString('en-GB',{weekday:'long'})}</small></div>
-   <div class="voucher-form">
-    <label>Supplier Invoice No. <input id="supplierNo"></label>
-    <label>Date <input id="supplierDate" type="date"></label>
-    <label class="full">Party A/c name <input id="vchParty" autocomplete="off" placeholder="Select ledger"></label>
-    <label class="full">Purchase ledger <input id="purchaseLedger" autocomplete="off"></label>
+ const c=company(), now=new Date();
+ app.innerHTML=shell(c.name,`<main class="voucher-engine-screen">
+  <section class="ve-main">
+   <div class="ve-heading"><b>${esc(V.type)} Voucher</b><span>No. <b>Auto</b></span></div>
+   <div class="ve-date"><b>${now.toLocaleDateString('en-GB')}</b><small>${now.toLocaleDateString('en-GB',{weekday:'long'})}</small></div>
+   <div class="ve-fields">
+    ${veCell(0,'ve-half')}${veCell(1,'ve-half')}${veCell(2,'ve-full')}${veCell(3,'ve-full')}
    </div>
-   <table class="voucher-table"><thead><tr><th>Name of Item</th><th>Quantity</th><th>Rate</th><th>Amount</th></tr></thead><tbody>
-    <tr><td><input id="itemName"></td><td><input id="qty" type="number" step="any"></td><td><input id="rate" type="number" step="any"></td><td><input id="amount" type="number" step="any"></td></tr>
-    <tr class="blank"><td></td><td></td><td></td><td></td></tr><tr class="blank"><td></td><td></td><td></td><td></td></tr>
-   </tbody><tfoot><tr><td colspan="3">Total</td><td id="voucherTotal">0.00</td></tr></tfoot></table>
-   <label class="narration">Narration <textarea id="narration"></textarea></label>
+   <div class="ve-grid-head"><span>Name of Item</span><span>Quantity</span><span>Rate</span><span>Amount</span></div>
+   <div class="ve-grid-row">${veGridCell(4)}${veGridCell(5)}${veGridCell(6)}${veGridCell(7)}</div>
+   <div class="ve-empty-rows"><div></div><div></div><div></div></div>
+   <div class="ve-total"><span>Total</span><b id="voucherTotal">${veTotal()}</b></div>
+   <div class="ve-narration"><span>Narration</span>${veRawCell(8)}</div>
    <div class="voucher-flags">${V.optional?'<b>OPTIONAL</b>':''}${V.postDated?'<b>POST-DATED</b>':''}</div>
+   <div class="ve-status" id="veStatus">Enter: Next field &nbsp; ↑/↓: Move &nbsp; Esc: Back</div>
   </section>
-  <aside class="function-panel">
-   <button data-act="date"><b>F2:</b> Date</button><button data-act="company"><b>F3:</b> Company</button>
-   <div class="fp-gap"></div>
-   <button data-type="Contra"><b>F4:</b> Contra</button><button data-type="Payment"><b>F5:</b> Payment</button><button data-type="Receipt"><b>F6:</b> Receipt</button><button data-type="Journal"><b>F7:</b> Journal</button><button data-type="Sales"><b>F8:</b> Sales</button><button data-type="Purchase" class="selected"><b>F9:</b> Purchase</button><button data-act="types"><b>F10:</b> Other Vouchers</button>
-   <div class="fp-gap"></div>
-   <button data-act="mode"><b>H:</b> Change Mode</button><button data-act="details"><b>I:</b> More Details</button><button data-act="related" class="disabled"><b>O:</b> Related Reports</button>
-   <div class="fp-gap"></div>
-   <button data-act="optional"><b>L:</b> Optional</button><button data-act="postdated"><b>T:</b> Post-Dated</button><button data-act="config"><b>F12:</b> Configure</button>
+  <aside class="ve-side">
+   <div class="ve-context" id="veContext"></div>
+   <div class="ve-inline-list" id="veInlineList" hidden></div>
+   <div class="function-panel ve-functions">
+    <button data-act="date"><b>F2:</b> Date</button><button data-act="company"><b>F3:</b> Company</button><div class="fp-gap"></div>
+    <button data-type="Contra"><b>F4:</b> Contra</button><button data-type="Payment"><b>F5:</b> Payment</button><button data-type="Receipt"><b>F6:</b> Receipt</button><button data-type="Journal"><b>F7:</b> Journal</button><button data-type="Sales"><b>F8:</b> Sales</button><button data-type="Purchase" class="selected"><b>F9:</b> Purchase</button><button data-act="types"><b>F10:</b> Other Vouchers</button><div class="fp-gap"></div>
+    <button data-act="mode"><b>H:</b> Change Mode</button><button data-act="details"><b>I:</b> More Details</button><button data-act="optional"><b>L:</b> Optional</button><button data-act="postdated"><b>T:</b> Post-Dated</button><button data-act="config"><b>F12:</b> Configure</button>
+   </div>
   </aside>
  </main>`);
+ document.querySelectorAll('.ve-cell').forEach((el,i)=>{
+  el.addEventListener('focus',()=>veActivate(i));
+  el.addEventListener('keydown',veCellKeydown);
+  el.addEventListener('beforeinput',veBeforeInput);
+  el.addEventListener('input',veInput);
+  el.addEventListener('paste',e=>{e.preventDefault();document.execCommand('insertText',false,(e.clipboardData||window.clipboardData).getData('text').replace(/\r?\n/g,' '))});
+ });
  document.querySelectorAll('.function-panel button').forEach(b=>b.onclick=()=>voucherAction(b));
- const calc=()=>{let q=Number(qty.value||0),r=Number(rate.value||0);if(document.activeElement!==amount)amount.value=(q*r||'');voucherTotal.textContent=Number(amount.value||0).toFixed(2)};
- ['qty','rate','amount'].forEach(id=>document.getElementById(id).addEventListener('input',calc));
- setTimeout(()=>document.getElementById(V.focusId)?.focus(),0)
+ veActivate(Math.min(V.activeCell,VOUCHER_CELLS.length-1));
+}
+function veCell(i,cls=''){let c=VOUCHER_CELLS[i];return `<div class="ve-field ${cls}"><span>${esc(c.label)}</span>${veRawCell(i)}</div>`}
+function veGridCell(i){return `<div class="ve-grid-cell">${veRawCell(i)}</div>`}
+function veRawCell(i){let c=VOUCHER_CELLS[i],v=V.values[c.key]||'';return `<div class="ve-cell" id="veCell${i}" data-i="${i}" data-kind="${c.kind}" tabindex="${i===V.activeCell?'0':'-1'}" contenteditable="true" spellcheck="false" data-placeholder="${esc(c.hint||'')}">${esc(v)}</div>`}
+function veTotal(){let a=Number(V.values.amount||0);if(!a){a=Number(V.values.qty||0)*Number(V.values.rate||0)}return Number(a||0).toFixed(2)}
+function veActivate(i){
+ V.activeCell=i;document.querySelectorAll('.ve-cell').forEach((x,j)=>{x.classList.toggle('active',j===i);x.tabIndex=j===i?0:-1});
+ const el=document.getElementById('veCell'+i);if(document.activeElement!==el)el?.focus({preventScroll:true});
+ vePlaceCaretEnd(el);veCloseInline(false);veUpdateContext();
+}
+function vePlaceCaretEnd(el){if(!el)return;let r=document.createRange(),s=window.getSelection();r.selectNodeContents(el);r.collapse(false);s.removeAllRanges();s.addRange(r)}
+function veMove(delta){veCommit();veActivate(Math.max(0,Math.min(VOUCHER_CELLS.length-1,V.activeCell+delta)))}
+function veCommit(){let el=document.getElementById('veCell'+V.activeCell);if(!el)return;let c=VOUCHER_CELLS[V.activeCell],t=el.textContent.trim();if(c.kind==='number')t=t.replace(/[^0-9.-]/g,'');V.values[c.key]=t;el.textContent=t;document.getElementById('voucherTotal').textContent=veTotal()}
+function veBeforeInput(e){let c=VOUCHER_CELLS[Number(e.currentTarget.dataset.i)];if(c.kind==='number'&&e.data&&!/[0-9.\-]/.test(e.data))e.preventDefault();if(e.inputType==='insertParagraph')e.preventDefault()}
+function veInput(e){let i=Number(e.currentTarget.dataset.i),c=VOUCHER_CELLS[i];V.values[c.key]=e.currentTarget.textContent.replace(/\r?\n/g,'');if(c.kind==='ledger')veOpenInline(V.values[c.key]);document.getElementById('voucherTotal').textContent=veTotal()}
+function veCellKeydown(e){
+ const i=Number(e.currentTarget.dataset.i),kind=VOUCHER_CELLS[i].kind,list=document.getElementById('veInlineList');
+ if(!list.hidden){
+  if(e.key==='ArrowDown'){e.preventDefault();e.stopPropagation();veListMove(1);return}
+  if(e.key==='ArrowUp'){e.preventDefault();e.stopPropagation();veListMove(-1);return}
+  if(e.key==='Enter'){e.preventDefault();e.stopPropagation();veListPick();return}
+  if(e.key==='Escape'){e.preventDefault();e.stopPropagation();veCloseInline(true);return}
+ }
+ if(e.key==='Enter'||e.key==='Tab'){e.preventDefault();e.stopPropagation();veMove(e.shiftKey?-1:1);return}
+ if(e.key==='ArrowDown'){e.preventDefault();e.stopPropagation();veMove(1);return}
+ if(e.key==='ArrowUp'){e.preventDefault();e.stopPropagation();veMove(-1);return}
+ if(e.key==='Escape'){e.preventDefault();e.stopPropagation();veCommit();gateway();return}
+ if(kind==='ledger'&&e.key==='ArrowRight'&&e.currentTarget.textContent.trim()===''){e.preventDefault();veOpenInline('');return}
+}
+let VE_LIST={items:[],index:0};
+function veLedgerItems(q=''){
+ let d=data(),items=d.ledgers.map(l=>({id:l.id,name:l.name,alias:l.alias||'',group:d.groups.find(g=>g.id===l.groupId)?.name||''}));
+ if(!items.length)items=[{id:'demo1',name:'Cash',group:'Cash-in-Hand'},{id:'demo2',name:'Purchase Accounts',group:'Purchase Accounts'},{id:'demo3',name:'Sundry Supplier',group:'Sundry Creditors'}];
+ q=q.trim().toLowerCase();return items.filter(x=>!q||x.name.toLowerCase().includes(q)||x.alias.toLowerCase().includes(q)).slice(0,18)
+}
+function veOpenInline(q){
+ VE_LIST.items=veLedgerItems(q);VE_LIST.index=0;let box=document.getElementById('veInlineList');box.hidden=false;veDrawList();
+}
+function veDrawList(){let box=document.getElementById('veInlineList');box.innerHTML=`<div class="ve-list-title">List of Ledgers</div>${VE_LIST.items.length?VE_LIST.items.map((x,i)=>`<button class="ve-list-row ${i===VE_LIST.index?'active':''}" data-i="${i}"><span>${esc(x.name)}</span><small>${esc(x.group)}</small></button>`).join(''):'<div class="empty-row">No matching ledger</div>'}`;box.querySelectorAll('button').forEach(b=>{b.onmouseenter=()=>{VE_LIST.index=Number(b.dataset.i);veDrawList()};b.onmousedown=e=>{e.preventDefault();VE_LIST.index=Number(b.dataset.i);veListPick()}})}
+function veListMove(d){if(!VE_LIST.items.length)return;VE_LIST.index=(VE_LIST.index+d+VE_LIST.items.length)%VE_LIST.items.length;veDrawList()}
+function veListPick(){let x=VE_LIST.items[VE_LIST.index];if(!x)return;let c=VOUCHER_CELLS[V.activeCell],el=document.getElementById('veCell'+V.activeCell);V.values[c.key]=x.name;el.textContent=x.name;veCloseInline(true);veMove(1)}
+function veCloseInline(refocus=true){let b=document.getElementById('veInlineList');if(b)b.hidden=true;if(refocus){let el=document.getElementById('veCell'+V.activeCell);el?.focus({preventScroll:true});vePlaceCaretEnd(el)}}
+function veUpdateContext(){
+ let c=VOUCHER_CELLS[V.activeCell],box=document.getElementById('veContext');if(!box)return;
+ let help=c.kind==='ledger'?'Type a ledger name. The list opens here automatically. Use ↑/↓ and Enter. Esc closes the list.':c.kind==='number'?'Enter numbers, then press Enter to move to the next cell.':'Type the value, then press Enter to continue.';
+ box.innerHTML=`<div class="ve-context-title">Current Field</div><b>${esc(c.label)}</b><p>${help}</p><small>Cell ${V.activeCell+1} of ${VOUCHER_CELLS.length}</small>`;
 }
 function voucherAction(b){
  if(b.classList.contains('disabled'))return;
@@ -121,7 +181,7 @@ function goToPopup(){
 }
 function quitPopup(text,onYes){if(document.getElementById('quitOv'))return;const previousFocus=document.activeElement;let q=document.createElement('div');q.id='quitOv';q.className='modal-backdrop quit-backdrop';q.innerHTML=`<div class="quit-box"><div>${esc(text)}</div><div class="quit-actions"><button data-choice="yes">Yes</button><button class="active" data-choice="no">No</button></div></div>`;document.body.appendChild(q);let buttons=[...q.querySelectorAll('button')],i=1;const set=n=>{i=(n+2)%2;buttons.forEach((b,j)=>b.classList.toggle('active',j===i));buttons[i].focus()};buttons.forEach((b,j)=>b.onclick=()=>{if(j===0){q.remove();onYes()}else{q.remove();setTimeout(()=>{if(previousFocus&&document.contains(previousFocus))previousFocus.focus({preventScroll:true});else document.querySelector('.menu-btn.active,.menu-btn')?.focus({preventScroll:true})},0)}});q.onkeydown=e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'||e.key==='Tab'){e.preventDefault();set(i===0?1:0)}else if(e.key==='Enter'){e.preventDefault();buttons[i].click()}else if(e.key==='Escape'||e.key.toLowerCase()==='n'){e.preventDefault();buttons[1].click()}else if(e.key.toLowerCase()==='y'){e.preventDefault();buttons[0].click()}};set(1)}
 function toast(t){let e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),2200)}
-function backupAll(){let out={version:'2.4',companies:DB.companies(),data:{}};out.companies.forEach(c=>out.data[c.id]=DB.data(c.id));let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));a.download='tabaja-erp-v2-4-backup.json';a.click()}
+function backupAll(){let out={version:'2.4-alpha1',companies:DB.companies(),data:{}};out.companies.forEach(c=>out.data[c.id]=DB.data(c.id));let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));a.download='tabaja-erp-v2-4-alpha1-backup.json';a.click()}
 restoreInput.onchange=async e=>{try{let o=JSON.parse(await e.target.files[0].text());DB.saveCompanies(o.companies||[]);Object.entries(o.data||{}).forEach(([id,v])=>DB.save(id,v));hub()}catch{alert('Invalid backup file')}};
 function focusables(root=document){return [...root.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(el=>el.offsetParent!==null)}
 function bindMenu(selector){const items=[...document.querySelectorAll(selector)];if(!items.length)return;let i=0;const set=n=>{i=(n+items.length)%items.length;items.forEach((x,j)=>{x.classList.toggle('active',j===i);x.tabIndex=j===i?0:-1});items[i].focus({preventScroll:true})};items.forEach((x,j)=>x.addEventListener('focus',()=>{i=j;items.forEach((a,k)=>a.classList.toggle('active',k===i))}));set(0)}
