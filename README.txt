@@ -24,3 +24,8 @@ V2.3 changes:
 - Search by report name or shortcut (DAL, DD, TB, CHA, CAL, AAL).
 - Esc from Ledger Selection returns directly to Gateway.
 - No keyboard-help side panel; original V2.2 colours and layout retained.
+
+V2.3.1 fix:
+- Esc from Gateway opens Quit Yes/No popup directly.
+- No/Esc keeps the user on Gateway and restores keyboard focus.
+- Company Selection is no longer shown when pressing Esc from Gateway.
