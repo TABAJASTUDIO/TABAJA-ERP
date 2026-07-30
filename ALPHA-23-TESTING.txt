@@ -1,0 +1,12 @@
+TABAJA ERP — ALPHA 23
+
+Focused fix: Backspace reverse navigation inside the restored last stock row.
+
+Expected keyboard path:
+Narration -> Backspace -> Amount
+Amount -> Backspace -> Rate
+Rate -> Backspace -> Quantity
+Quantity -> Backspace -> Item
+Item -> Backspace edits the item name character by character.
+
+Arrow Up continues to follow the same path. Values are not deleted while moving across Amount, Rate, and Quantity.
