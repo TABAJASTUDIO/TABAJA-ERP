@@ -1,0 +1,14 @@
+TABAJA ERP — ALPHA 6
+
+Main change: Central Keyboard Engine
+
+Test checklist:
+1. Gateway: Arrow Up/Down, Enter, C/A/H/V/D/Q hotkeys.
+2. Esc on Gateway opens Quit; Esc again selects No and restores focus.
+3. Master menus: Arrow Up/Down, Enter, Esc.
+4. Go To: F4 or G outside text fields; Esc closes it.
+5. Voucher shortcuts: F2-F10, F12, Alt+F5, Alt+F6, Alt+F7, Ctrl+F7.
+6. Voucher Esc opens Quit voucher; Esc again selects No.
+7. Ctrl+A inside forms saves/submits.
+
+No stored company data is removed; browser localStorage remains compatible.

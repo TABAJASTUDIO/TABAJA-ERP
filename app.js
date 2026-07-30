@@ -9,7 +9,7 @@ function company(){return DB.companies().find(x=>x.id===S.companyId)}
 function data(){let d=DB.data(S.companyId);if(!d){d=seed();DB.save(S.companyId,d)}if(!d.vouchers)d.vouchers=[];if(!d.stockItems)d.stockItems=[];return d}
 function saveData(d){DB.save(S.companyId,d)}
 function hk(label,key){const i=label.toLowerCase().indexOf(key.toLowerCase());if(i<0)return esc(label);return esc(label.slice(0,i))+`<u class="hotkey">${esc(label[i])}</u>`+esc(label.slice(i+1))}
-function shell(title,body){return `<div class="top"><div class="brand">Tabaja ERP <small>V2.4 A5</small></div><div class="topnav"><button>K: Company</button><button>Y: Data</button><button>Z: Exchange</button><button id="gotoTop">G: Go To</button><button>O: Import</button><button>E: Export</button></div></div><div class="strip">${esc(title)}</div>${body}<div class="status"><span>Q: Quit</span><span>A: Accept</span><span>Esc: Back</span><span>Enter: Select</span></div>`}
+function shell(title,body){return `<div class="top"><div class="brand">Tabaja ERP <small>Alpha 6</small></div><div class="topnav"><button>K: Company</button><button>Y: Data</button><button>Z: Exchange</button><button id="gotoTop">G: Go To</button><button>O: Import</button><button>E: Export</button></div></div><div class="strip">${esc(title)}</div>${body}<div class="status"><span>Q: Quit</span><span>A: Accept</span><span>Esc: Back</span><span>Enter: Select</span></div>`}
 function render(){if(!S.user)return login();if(!S.companyId||!company())return hub();gateway()}
 function login(){S.screen='login';app.innerHTML=`<div class="login"><form class="loginbox" id="f"><h1>Tabaja ERP</h1><p>Personal Accounting System</p><div class="field"><label>User Name</label><input name="u" value="admin"></div><div class="field"><label>Password</label><input name="p" type="password" value="1234"></div><button class="btn primary" style="width:100%">Sign In</button><div class="note">First login: admin / 1234</div></form></div>`;f.onsubmit=e=>{e.preventDefault();let x=new FormData(f);if(x.get('u')==='admin'&&x.get('p')==='1234'){S.user='admin';sessionStorage.setItem('te_user','admin');hub()}else alert('Incorrect login')}}
 function hub(){S.screen='hub';S.stack=[];let cs=DB.companies();app.innerHTML=shell('Company Selection',`<main class="hub"><div class="toolbar hub-tools"><button class="btn primary" id="newC">${hk('Create Company','C')}</button><button class="btn" id="backup">${hk('Backup Data','B')}</button><button class="btn" id="restore">${hk('Restore Data','R')}</button><button class="btn" id="logout">${hk('Logout','L')}</button></div><div class="cards">${cs.length?cs.map((c,i)=>`<div class="card company-card"><h3>${esc(c.name)}</h3><p>${esc(c.country||'Sierra Leone')}</p><p>Financial year: ${esc(c.fy)}</p><button class="btn primary open-company" data-open="${c.id}">${hk('Open Company','O')}</button></div>`).join(''):'<div class="card"><h3>No company created</h3><p>Create your first company.</p></div>'}</div></main>`);newC.onclick=companyForm;logout.onclick=()=>{sessionStorage.clear();S.user=null;login()};backup.onclick=backupAll;restore.onclick=()=>restoreInput.click();document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openCompany(b.dataset.open));setTimeout(()=>document.querySelector('.open-company')?.focus(),0)}
@@ -199,41 +199,105 @@ function goToPopup(){
 }
 function quitPopup(text,onYes){if(document.getElementById('quitOv'))return;const previousFocus=document.activeElement;let q=document.createElement('div');q.id='quitOv';q.className='modal-backdrop quit-backdrop';q.innerHTML=`<div class="quit-box"><div>${esc(text)}</div><div class="quit-actions"><button data-choice="yes">Yes</button><button class="active" data-choice="no">No</button></div></div>`;document.body.appendChild(q);let buttons=[...q.querySelectorAll('button')],i=1;const set=n=>{i=(n+2)%2;buttons.forEach((b,j)=>b.classList.toggle('active',j===i));buttons[i].focus()};buttons.forEach((b,j)=>b.onclick=()=>{if(j===0){q.remove();onYes()}else{q.remove();setTimeout(()=>{if(previousFocus&&document.contains(previousFocus))previousFocus.focus({preventScroll:true});else document.querySelector('.menu-btn.active,.menu-btn')?.focus({preventScroll:true})},0)}});q.onkeydown=e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'||e.key==='Tab'){e.preventDefault();set(i===0?1:0)}else if(e.key==='Enter'){e.preventDefault();buttons[i].click()}else if(e.key==='Escape'||e.key.toLowerCase()==='n'){e.preventDefault();buttons[1].click()}else if(e.key.toLowerCase()==='y'){e.preventDefault();buttons[0].click()}};set(1)}
 function toast(t){let e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),2200)}
-function backupAll(){let out={version:'2.4-alpha3',companies:DB.companies(),data:{}};out.companies.forEach(c=>out.data[c.id]=DB.data(c.id));let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));a.download='tabaja-erp-v2.4-alpha3-backup.json';a.click()}
+function backupAll(){let out={version:'alpha-6',companies:DB.companies(),data:{}};out.companies.forEach(c=>out.data[c.id]=DB.data(c.id));let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));a.download='tabaja-erp-alpha-6-backup.json';a.click()}
 restoreInput.onchange=async e=>{try{let o=JSON.parse(await e.target.files[0].text());DB.saveCompanies(o.companies||[]);Object.entries(o.data||{}).forEach(([id,v])=>DB.save(id,v));hub()}catch{alert('Invalid backup file')}};
 function focusables(root=document){return [...root.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(el=>el.offsetParent!==null)}
 function bindMenu(selector){const items=[...document.querySelectorAll(selector)];if(!items.length)return;let i=0;const set=n=>{i=(n+items.length)%items.length;items.forEach((x,j)=>{x.classList.toggle('active',j===i);x.tabIndex=j===i?0:-1});items[i].focus({preventScroll:true})};items.forEach((x,j)=>x.addEventListener('focus',()=>{i=j;items.forEach((a,k)=>a.classList.toggle('active',k===i))}));set(0)}
 function setupFormKeyboard(form,onCancel){form.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();onCancel();return}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='a'){e.preventDefault();form.requestSubmit();return}if(e.key==='Enter'&&e.target.tagName!=='TEXTAREA'){e.preventDefault();const list=focusables(form);let i=list.indexOf(e.target),next=list[i+1];if(!next||e.target.type==='submit')form.requestSubmit();else next.focus()}});setTimeout(()=>focusables(form)[0]?.focus(),0)}
 function handleMenuKeys(e,root=document){const items=[...root.querySelectorAll('.menu-btn,.master-list button,.list-row')].filter(x=>x.offsetParent!==null);if(!items.length)return false;let i=items.indexOf(document.activeElement);if(i<0)i=items.findIndex(x=>x.classList.contains('active'));if(e.key==='ArrowDown'){e.preventDefault();items[(i+1+items.length)%items.length].focus();return true}if(e.key==='ArrowUp'){e.preventDefault();items[(i-1+items.length)%items.length].focus();return true}if(e.key==='Enter'&&items.includes(document.activeElement)){e.preventDefault();document.activeElement.click();return true}if(!e.ctrlKey&&!e.altKey&&!e.metaKey&&e.key.length===1){let k=e.key.toLowerCase(),match=items.find(x=>x.dataset.key===k);if(match){e.preventDefault();match.click();return true}}return false}
-document.addEventListener('keydown',e=>{
- const quit=document.getElementById('quitOv');
- if(quit){
-  if(e.key==='Escape'||e.key.toLowerCase()==='n'){e.preventDefault();e.stopImmediatePropagation();quit.querySelector('[data-choice=\"no\"]')?.click()}
-  else if(e.key.toLowerCase()==='y'){e.preventDefault();e.stopImmediatePropagation();quit.querySelector('[data-choice=\"yes\"]')?.click()}
-  return;
- }
- if(document.getElementById('gotoOv'))return;
- if(document.getElementById('tallyOv'))return;
- if(S.screen==='voucher'){
-  if(e.key==='Escape'){e.preventDefault();quitPopup('Quit voucher?',()=>gateway());return}
-  const k=e.key.toUpperCase(); const m={'F2':'date','F3':'company','F4':'Contra','F5':'Payment','F6':'Receipt','F7':'Journal','F8':'Sales','F9':'Purchase','F10':'types','F12':'config'};
-  if(m[k]){e.preventDefault();let v=m[k];if(['Contra','Payment','Receipt','Journal','Sales','Purchase'].includes(v)){V.type=v;voucherEntry()}else voucherAction({dataset:{act:v},classList:{contains:()=>false}});return}
-  if(!e.ctrlKey&&!e.altKey&&!e.metaKey&&['H','I','L','T'].includes(k)){e.preventDefault();voucherAction({dataset:{act:{H:'mode',I:'details',L:'optional',T:'postdated'}[k]},classList:{contains:()=>false}});return}
- }
- const ov=document.getElementById('ov');
- if(e.key==='Escape'){
-   e.preventDefault();
-   if(ov){ov.remove();if(S.screen==='ledgerList')gateway();else if(S.screen==='accountBooks')displayMenu();else if(S.screen==='displayMenu'||S.screen==='createMenu'||S.screen==='alterMenu')gateway();return}
-   if(S.screen==='ledgerDisplay'){ledgerList('display');return}
-   if(S.screen==='chart'){gateway();return}
-   if(S.screen==='gateway'){quitPopup('Quit?',()=>{sessionStorage.clear();S.user=null;S.companyId=null;login()});return}
-   if(S.screen==='hub'){quitPopup('Quit?',()=>{sessionStorage.clear();S.user=null;login()});return}
-   if(S.screen==='companyForm'){hub();return}
- }
- if(e.key==='F4'||(e.key.toLowerCase()==='g'&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&!["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName))){e.preventDefault();goToPopup();return}
- if(ov){if(handleMenuKeys(e,ov))return}
- else if(handleMenuKeys(e,document))return;
- if(!ov&&S.screen==='gateway'&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&e.key.length===1){let map={c:createMenu,a:alterMenu,h:chart,d:displayMenu,q:()=>quitPopup('Quit?',()=>{sessionStorage.clear();S.user=null;S.companyId=null;login()})};let fn=map[e.key.toLowerCase()];if(fn){e.preventDefault();fn()}}
- if(!ov&&S.screen==='hub'&&e.key==='Enter'&&document.activeElement?.classList.contains('open-company')){e.preventDefault();document.activeElement.click()}
-});
+const KeyboardEngine={
+ enabled:true,
+ isTypingTarget(el=document.activeElement){return !!el&&['INPUT','TEXTAREA','SELECT'].includes(el.tagName)},
+ stop(e){e.preventDefault();e.stopImmediatePropagation()},
+ key(e){
+  const parts=[];
+  if(e.ctrlKey||e.metaKey)parts.push('CTRL');
+  if(e.altKey)parts.push('ALT');
+  if(e.shiftKey)parts.push('SHIFT');
+  parts.push(e.key.length===1?e.key.toUpperCase():e.key.toUpperCase());
+  return parts.join('+')
+ },
+ restoreFocus(){
+  setTimeout(()=>{
+   const preferred=S.focusKey&&document.querySelector(`[data-focus-key="${S.focusKey}"]`);
+   const target=preferred||document.querySelector('.menu-btn.active,.list-row.active,.master-list button.active,.open-company,.menu-btn,button,input,select,textarea');
+   if(target&&document.contains(target))target.focus({preventScroll:true})
+  },0)
+ },
+ rememberFocus(){
+  const el=document.activeElement;
+  if(!el)return;
+  if(!el.dataset.focusKey)el.dataset.focusKey=el.id||`focus-${Date.now().toString(36)}`;
+  S.focusKey=el.dataset.focusKey
+ },
+ closeOverlay(){
+  const ov=document.getElementById('ov');
+  if(!ov)return false;
+  ov.remove();
+  if(S.screen==='ledgerList')gateway();
+  else if(S.screen==='accountBooks')displayMenu();
+  else if(['displayMenu','createMenu','alterMenu'].includes(S.screen))gateway();
+  this.restoreFocus();
+  return true
+ },
+ handleQuit(e){
+  const q=document.getElementById('quitOv');
+  if(!q)return false;
+  const k=this.key(e);
+  if(k==='ESCAPE'||k==='N'){this.stop(e);q.querySelector('[data-choice="no"]')?.click()}
+  else if(k==='Y'){this.stop(e);q.querySelector('[data-choice="yes"]')?.click()}
+  return true
+ },
+ handleVoucher(e){
+  if(S.screen!=='voucher')return false;
+  const k=this.key(e);
+  if(k==='ESCAPE'){this.stop(e);quitPopup('Quit voucher?',()=>gateway());return true}
+  const map={F2:'date',F3:'company',F4:'Contra',F5:'Payment',F6:'Receipt',F7:'Journal',F8:'Sales',F9:'Purchase',F10:'types',F12:'config','ALT+F5':'Debit Note','ALT+F6':'Credit Note','ALT+F7':'Stock Journal','CTRL+F7':'Physical Stock'};
+  if(map[k]){
+   this.stop(e);const v=map[k];
+   if(['Contra','Payment','Receipt','Journal','Sales','Purchase','Debit Note','Credit Note','Stock Journal','Physical Stock'].includes(v)){V.type=v;voucherEntry()}
+   else voucherAction({dataset:{act:v},classList:{contains:()=>false}});
+   return true
+  }
+  if(!this.isTypingTarget()&&['H','I','L','T'].includes(k)){
+   this.stop(e);voucherAction({dataset:{act:{H:'mode',I:'details',L:'optional',T:'postdated'}[k]},classList:{contains:()=>false}});return true
+  }
+  return false
+ },
+ handleEscape(e){
+  if(e.key!=='Escape')return false;
+  this.stop(e);
+  if(this.closeOverlay())return true;
+  if(S.screen==='ledgerDisplay'){ledgerList('display');return true}
+  if(S.screen==='chart'){gateway();return true}
+  if(S.screen==='gateway'){quitPopup('Quit?',()=>{sessionStorage.clear();S.user=null;S.companyId=null;login()});return true}
+  if(S.screen==='hub'){quitPopup('Quit?',()=>{sessionStorage.clear();S.user=null;login()});return true}
+  if(S.screen==='companyForm'){hub();return true}
+  return true
+ },
+ handleGlobal(e){
+  const k=this.key(e),typing=this.isTypingTarget();
+  if(k==='F4'||(k==='G'&&!typing)){this.stop(e);goToPopup();return true}
+  const ov=document.getElementById('ov');
+  if(ov&&handleMenuKeys(e,ov))return true;
+  if(!ov&&handleMenuKeys(e,document))return true;
+  if(!ov&&S.screen==='gateway'&&!typing&&e.key.length===1){
+   const map={c:createMenu,a:alterMenu,h:chart,v:voucherEntry,d:displayMenu,q:()=>quitPopup('Quit?',()=>{sessionStorage.clear();S.user=null;S.companyId=null;login()})};
+   const fn=map[e.key.toLowerCase()];if(fn){this.stop(e);fn();return true}
+  }
+  if(!ov&&S.screen==='hub'&&e.key==='Enter'&&document.activeElement?.classList.contains('open-company')){this.stop(e);document.activeElement.click();return true}
+  return false
+ },
+ dispatch(e){
+  if(!this.enabled||e.defaultPrevented)return;
+  this.rememberFocus();
+  if(this.handleQuit(e))return;
+  if(document.getElementById('gotoOv')||document.getElementById('tallyOv'))return;
+  if(this.handleVoucher(e))return;
+  if(this.handleEscape(e))return;
+  this.handleGlobal(e)
+ },
+ init(){document.addEventListener('keydown',e=>this.dispatch(e),true)}
+};
+KeyboardEngine.init();
 render();
