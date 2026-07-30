@@ -42,32 +42,38 @@ const VOUCHER_CELLS=[
 function voucherEntry(){
  document.getElementById('ov')?.remove();S.screen='voucher';
  const c=company(), now=new Date();
- app.innerHTML=shell(c.name,`<main class="voucher-engine-screen">
+ // Tally-style start: Purchase stays selected and Party A/c is ready immediately.
+ if(V.type!=='Purchase')V.type='Purchase';
+ V.activeCell=2;
+ app.innerHTML=shell(c.name,`<main class="voucher-engine-screen tally-blank-voucher">
   <section class="ve-main">
-   <div class="ve-heading"><b>${esc(V.type)} Voucher</b><span>No. <b>Auto</b></span></div>
+   <div class="ve-heading"><b>Purchase</b><span>No. <b>Auto</b></span></div>
    <div class="ve-date"><b>${now.toLocaleDateString('en-GB')}</b><small>${now.toLocaleDateString('en-GB',{weekday:'long'})}</small></div>
-   <div class="ve-fields">
-    ${veCell(0,'ve-half')}${veCell(1,'ve-half')}${veCell(2,'ve-full')}${veCell(3,'ve-full')}
+   <div class="tally-entry-lines">
+    <div class="tally-pair"><span>Supplier Invoice No.</span>${veRawCell(0)}<span class="tally-date-label">Date</span>${veRawCell(1)}</div>
+    <div class="tally-line"><span>Party A/c name</span>${veRawCell(2)}</div>
+    <div class="tally-balance"><span>Current balance</span><b></b></div>
+    <div class="tally-line"><span>Purchase ledger</span>${veRawCell(3)}</div>
+    <div class="tally-balance"><span>Current balance</span><b></b></div>
+    <div class="tally-item-heading">Name of Item</div>
+    <div class="tally-item-entry">${veRawCell(4)}</div>
    </div>
-   <div class="ve-grid-head"><span>Name of Item</span><span>Quantity</span><span>Rate</span><span>Amount</span></div>
-   <div class="ve-grid-row">${veGridCell(4)}${veGridCell(5)}${veGridCell(6)}${veGridCell(7)}</div>
-   <div class="ve-empty-rows"><div></div><div></div><div></div></div>
-   <div class="ve-total"><span>Total</span><b id="voucherTotal">${veTotal()}</b></div>
-   <div class="ve-narration"><span>Narration</span>${veRawCell(8)}</div>
+   <div class="tally-white-space"></div>
+   <div class="ve-narration tally-narration"><span>Narration</span>${veRawCell(8)}</div>
    <div class="voucher-flags">${V.optional?'<b>OPTIONAL</b>':''}${V.postDated?'<b>POST-DATED</b>':''}</div>
-   <div class="ve-status" id="veStatus">Enter: Next field &nbsp; ↑/↓: Move &nbsp; Esc: Back</div>
+   <div class="ve-status" id="veStatus">Enter: Select &nbsp; ↑/↓: Move &nbsp; Esc: Back</div>
   </section>
   <aside class="ve-side">
-   <div class="ve-context" id="veContext"></div>
    <div class="ve-inline-list" id="veInlineList" hidden></div>
    <div class="function-panel ve-functions">
     <button data-act="date"><b>F2:</b> Date</button><button data-act="company"><b>F3:</b> Company</button><div class="fp-gap"></div>
-    <button data-type="Contra"><b>F4:</b> Contra</button><button data-type="Payment"><b>F5:</b> Payment</button><button data-type="Receipt"><b>F6:</b> Receipt</button><button data-type="Journal"><b>F7:</b> Journal</button><button data-type="Sales"><b>F8:</b> Sales</button><button data-type="Purchase" class="selected"><b>F9:</b> Purchase</button><button data-act="types"><b>F10:</b> Other Vouchers</button><div class="fp-gap"></div>
+    <button data-type="Contra"><b>F4:</b> Contra</button><button data-type="Payment"><b>F5:</b> Payment</button><button data-type="Receipt"><b>F6:</b> Receipt</button><button data-type="Journal"><b>F7:</b> Journal</button><button data-type="Sales"><b>F8:</b> Sales</button><button data-type="Purchase" class="selected permanent-selected"><b>F9:</b> Purchase</button><button data-act="types"><b>F10:</b> Other Vouchers</button><div class="fp-gap"></div>
     <button data-act="mode"><b>H:</b> Change Mode</button><button data-act="details"><b>I:</b> More Details</button><button data-act="optional"><b>L:</b> Optional</button><button data-act="postdated"><b>T:</b> Post-Dated</button><button data-act="config"><b>F12:</b> Configure</button>
    </div>
   </aside>
  </main>`);
- document.querySelectorAll('.ve-cell').forEach((el,i)=>{
+ document.querySelectorAll('.ve-cell').forEach((el)=>{
+  const i=Number(el.dataset.i);
   el.addEventListener('focus',()=>veActivate(i));
   el.addEventListener('keydown',veCellKeydown);
   el.addEventListener('beforeinput',veBeforeInput);
@@ -75,7 +81,9 @@ function voucherEntry(){
   el.addEventListener('paste',e=>{e.preventDefault();document.execCommand('insertText',false,(e.clipboardData||window.clipboardData).getData('text').replace(/\r?\n/g,' '))});
  });
  document.querySelectorAll('.function-panel button').forEach(b=>b.onclick=()=>voucherAction(b));
- veActivate(Math.min(V.activeCell,VOUCHER_CELLS.length-1));
+ veActivate(2);
+ // Just like Tally, show the ledger list as soon as Purchase opens.
+ setTimeout(()=>veOpenInline(V.values.party||''),0);
 }
 function veCell(i,cls=''){let c=VOUCHER_CELLS[i];return `<div class="ve-field ${cls}"><span>${esc(c.label)}</span>${veRawCell(i)}</div>`}
 function veGridCell(i){return `<div class="ve-grid-cell">${veRawCell(i)}</div>`}
@@ -102,7 +110,7 @@ function veCellKeydown(e){
  if(e.key==='Enter'||e.key==='Tab'){e.preventDefault();e.stopPropagation();veMove(e.shiftKey?-1:1);return}
  if(e.key==='ArrowDown'){e.preventDefault();e.stopPropagation();veMove(1);return}
  if(e.key==='ArrowUp'){e.preventDefault();e.stopPropagation();veMove(-1);return}
- if(e.key==='Escape'){e.preventDefault();e.stopPropagation();veCommit();gateway();return}
+ if(e.key==='Escape'){e.preventDefault();e.stopPropagation();veCommit();quitPopup('Quit voucher?',()=>gateway());return}
  if(kind==='ledger'&&e.key==='ArrowRight'&&e.currentTarget.textContent.trim()===''){e.preventDefault();veOpenInline('');return}
 }
 let VE_LIST={items:[],index:0};
@@ -125,7 +133,7 @@ function veUpdateContext(){
 }
 function voucherAction(b){
  if(b.classList.contains('disabled'))return;
- if(b.dataset.type){V.type=b.dataset.type;voucherEntry();return}
+ if(b.dataset.type){if(b.dataset.type!=='Purchase'){toast('Purchase is the active test voucher in this build.');return}V.type='Purchase';voucherEntry();return}
  const a=b.dataset.act;
  if(a==='date')datePopup();else if(a==='company')toast('Company selection remains unchanged in this test build.');
  else if(a==='types')voucherTypePopup();else if(a==='mode')voucherModePopup();else if(a==='details')moreDetailsPopup();
@@ -188,11 +196,16 @@ function bindMenu(selector){const items=[...document.querySelectorAll(selector)]
 function setupFormKeyboard(form,onCancel){form.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();onCancel();return}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='a'){e.preventDefault();form.requestSubmit();return}if(e.key==='Enter'&&e.target.tagName!=='TEXTAREA'){e.preventDefault();const list=focusables(form);let i=list.indexOf(e.target),next=list[i+1];if(!next||e.target.type==='submit')form.requestSubmit();else next.focus()}});setTimeout(()=>focusables(form)[0]?.focus(),0)}
 function handleMenuKeys(e,root=document){const items=[...root.querySelectorAll('.menu-btn,.master-list button,.list-row')].filter(x=>x.offsetParent!==null);if(!items.length)return false;let i=items.indexOf(document.activeElement);if(i<0)i=items.findIndex(x=>x.classList.contains('active'));if(e.key==='ArrowDown'){e.preventDefault();items[(i+1+items.length)%items.length].focus();return true}if(e.key==='ArrowUp'){e.preventDefault();items[(i-1+items.length)%items.length].focus();return true}if(e.key==='Enter'&&items.includes(document.activeElement)){e.preventDefault();document.activeElement.click();return true}if(!e.ctrlKey&&!e.altKey&&!e.metaKey&&e.key.length===1){let k=e.key.toLowerCase(),match=items.find(x=>x.dataset.key===k);if(match){e.preventDefault();match.click();return true}}return false}
 document.addEventListener('keydown',e=>{
- if(document.getElementById('quitOv'))return;
+ const quit=document.getElementById('quitOv');
+ if(quit){
+  if(e.key==='Escape'||e.key.toLowerCase()==='n'){e.preventDefault();e.stopImmediatePropagation();quit.querySelector('[data-choice=\"no\"]')?.click()}
+  else if(e.key.toLowerCase()==='y'){e.preventDefault();e.stopImmediatePropagation();quit.querySelector('[data-choice=\"yes\"]')?.click()}
+  return;
+ }
  if(document.getElementById('gotoOv'))return;
  if(document.getElementById('tallyOv'))return;
  if(S.screen==='voucher'){
-  if(e.key==='Escape'){e.preventDefault();gateway();return}
+  if(e.key==='Escape'){e.preventDefault();quitPopup('Quit voucher?',()=>gateway());return}
   const k=e.key.toUpperCase(); const m={'F2':'date','F3':'company','F4':'Contra','F5':'Payment','F6':'Receipt','F7':'Journal','F8':'Sales','F9':'Purchase','F10':'types','F12':'config'};
   if(m[k]){e.preventDefault();let v=m[k];if(['Contra','Payment','Receipt','Journal','Sales','Purchase'].includes(v)){V.type=v;voucherEntry()}else voucherAction({dataset:{act:v},classList:{contains:()=>false}});return}
   if(!e.ctrlKey&&!e.altKey&&!e.metaKey&&['H','I','L','T'].includes(k)){e.preventDefault();voucherAction({dataset:{act:{H:'mode',I:'details',L:'optional',T:'postdated'}[k]},classList:{contains:()=>false}});return}
