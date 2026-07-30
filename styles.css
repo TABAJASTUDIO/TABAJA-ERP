@@ -287,3 +287,18 @@ button:focus,input:focus,select:focus,textarea:focus{outline:2px solid #f5b13f;o
   .voucher-item-name-cell,.voucher-qty-cell{min-height:31px}
   .voucher-empty-space{min-height:8px}
 }
+
+/* Alpha 11 — locked visual baseline; typography and voucher editing behavior only */
+.voucher-entry-area .ve-value,
+.voucher-entry-area .ve-static,
+.voucher-entry-area .voucher-unit,
+.voucher-narration .ve-value,
+.ve-entered-value{
+  font-weight:700;
+}
+.voucher-balance span{font-weight:400;font-style:italic}
+.voucher-balance b{font-weight:600;font-style:italic}
+.voucher-item-name-cell small,
+.voucher-qty-cell small{font-weight:400;font-style:italic}
+.ve-list-row span{font-weight:700}
+.ve-list-row small{font-weight:400;font-style:italic}

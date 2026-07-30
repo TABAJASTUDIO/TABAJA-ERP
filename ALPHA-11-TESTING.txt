@@ -1,0 +1,16 @@
+TABAJA ERP — ALPHA 11 TESTING
+
+Visual baseline is locked. This build changes voucher behavior and typography only.
+
+TEST:
+1. Enter two stock items and finish with End of List.
+2. From Narration press Esc:
+   - First Esc cancels unsaved narration text.
+   - Next Esc returns to the NAME of the last item (not Rate or Purchase Ledger).
+3. On the last item, choose End of List:
+   - The last item is removed.
+   - Earlier items and totals remain.
+   - Focus moves to Narration.
+4. Confirm quantity shows unit and calculated KG below it.
+5. Confirm typed/selected values are bold; labels remain regular; balances/weight lines remain italic/lighter.
+6. Quick Create Stock Item includes Weight per Unit (KG). Voucher calculations use this stored value when available.
