@@ -1,0 +1,8 @@
+TABAJA ERP — ALPHA 18 TEST
+
+1. In Purchase voucher, enter two stock items and reach Narration.
+2. Press Esc once: focus must return to the blank Item line with Stock List open on End of List.
+3. Press Esc again: the last committed item must load for editing at Amount.
+4. Continue Esc: Amount -> Rate -> Quantity -> Item. It must not jump to Purchase Ledger.
+5. In any Ledger/Stock list, Create stays above the data list.
+6. From the first data row, Arrow Up selects Create. Arrow Down returns to the first data row. Enter on Create opens creation.
