@@ -1,0 +1,8 @@
+TABAJA ERP — ALPHA 9 TESTING
+
+1. Voucher text is larger and fully readable.
+2. Narration label and entry box must both remain fully visible without page scrolling.
+3. F12 Configure must be fully visible at the bottom of the right panel.
+4. Party/Purchase current balance lines are closer to their account rows.
+5. Press Esc inside a voucher: return directly to Gateway.
+6. Re-enter Vouchers: all draft fields, selections, amounts and narration must be empty.
