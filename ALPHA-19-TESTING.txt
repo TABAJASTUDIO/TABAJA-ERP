@@ -1,0 +1,18 @@
+TABAJA ERP — ALPHA 19 TEST
+
+Main fix: Voucher reverse navigation rebuilt for the item section.
+
+Test exactly:
+1. Enter Party, Purchase Ledger and two stock items.
+2. Reach Narration.
+3. Press Esc once: focus must return to Amount of the last item.
+4. Press Esc again: Rate.
+5. Press Esc again: Quantity.
+6. Press Esc again: Item name and Stock Item list opens on that item.
+7. It must NOT jump to Purchase Ledger.
+
+Create keyboard test:
+- In any Ledger/Stock list, move to the first list row.
+- Press Arrow Up: Create is selected.
+- Press Enter: Create form opens.
+- Arrow Down returns from Create to the first list row.

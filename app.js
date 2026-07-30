@@ -9,7 +9,7 @@ function company(){return DB.companies().find(x=>x.id===S.companyId)}
 function data(){let d=DB.data(S.companyId);if(!d){d=seed();DB.save(S.companyId,d)}if(!d.vouchers)d.vouchers=[];if(!d.stockItems)d.stockItems=[];return d}
 function saveData(d){DB.save(S.companyId,d)}
 function hk(label,key){const i=label.toLowerCase().indexOf(key.toLowerCase());if(i<0)return esc(label);return esc(label.slice(0,i))+`<u class="hotkey">${esc(label[i])}</u>`+esc(label.slice(i+1))}
-function shell(title,body){return `<div class="top"><div class="brand">Tabaja ERP <small>Alpha 18</small></div><div class="topnav"><button id="companyTop" data-top-menu="company">K: Company</button><button id="dataTop" data-top-menu="data">Y: Data</button><button id="exchangeTop" data-top-menu="exchange">Z: Exchange</button><button id="gotoTop">G: Go To</button><button id="importTop" data-top-menu="import">O: Import</button><button id="exportTop" data-top-menu="export">E: Export</button><button id="shareTop" data-top-menu="share">M: Share</button><button id="printTop" data-top-menu="print">P: Print</button><button id="helpTop" data-top-menu="help">F1: Help</button></div></div><div class="strip">${esc(title)}</div>${body}<div class="status"><span>Q: Quit</span><span>A: Accept</span><span>Esc: Back</span><span>Enter: Select</span></div>`}
+function shell(title,body){return `<div class="top"><div class="brand">Tabaja ERP <small>Alpha 19</small></div><div class="topnav"><button id="companyTop" data-top-menu="company">K: Company</button><button id="dataTop" data-top-menu="data">Y: Data</button><button id="exchangeTop" data-top-menu="exchange">Z: Exchange</button><button id="gotoTop">G: Go To</button><button id="importTop" data-top-menu="import">O: Import</button><button id="exportTop" data-top-menu="export">E: Export</button><button id="shareTop" data-top-menu="share">M: Share</button><button id="printTop" data-top-menu="print">P: Print</button><button id="helpTop" data-top-menu="help">F1: Help</button></div></div><div class="strip">${esc(title)}</div>${body}<div class="status"><span>Q: Quit</span><span>A: Accept</span><span>Esc: Back</span><span>Enter: Select</span></div>`}
 function render(){if(!S.user)return login();if(!S.companyId||!company())return hub();gateway()}
 function login(){S.screen='login';app.innerHTML=`<div class="login"><form class="loginbox" id="f"><h1>Tabaja ERP</h1><p>Personal Accounting System</p><div class="field"><label>User Name</label><input name="u" value="admin"></div><div class="field"><label>Password</label><input name="p" type="password" value="1234"></div><button class="btn primary" style="width:100%">Sign In</button><div class="note">First login: admin / 1234</div></form></div>`;f.onsubmit=e=>{e.preventDefault();let x=new FormData(f);if(x.get('u')==='admin'&&x.get('p')==='1234'){S.user='admin';sessionStorage.setItem('te_user','admin');hub()}else alert('Incorrect login')}}
 function hub(){S.screen='hub';S.stack=[];let cs=DB.companies();app.innerHTML=shell('Company Selection',`<main class="hub"><div class="toolbar hub-tools"><button class="btn primary" id="newC">${hk('Create Company','C')}</button><button class="btn" id="backup">${hk('Backup Data','B')}</button><button class="btn" id="restore">${hk('Restore Data','R')}</button><button class="btn" id="logout">${hk('Logout','L')}</button></div><div class="cards">${cs.length?cs.map((c,i)=>`<div class="card company-card"><h3>${esc(c.name)}</h3><p>${esc(c.country||'Sierra Leone')}</p><p>Financial year: ${esc(c.fy)}</p><button class="btn primary open-company" data-open="${c.id}">${hk('Open Company','O')}</button></div>`).join(''):'<div class="card"><h3>No company created</h3><p>Create your first company.</p></div>'}</div></main>`);newC.onclick=companyForm;logout.onclick=()=>{sessionStorage.clear();S.user=null;login()};backup.onclick=backupAll;restore.onclick=()=>restoreInput.click();document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openCompany(b.dataset.open));bindTopNav();setTimeout(()=>document.querySelector('.open-company')?.focus(),0)}
@@ -39,7 +39,7 @@ function topMenuItems(kind){
   export:[{heading:'REPORTS'},{name:'Current',key:'Ctrl+E',disabled:true},{name:'Others',disabled:true},{heading:'COMPANY DATA'},{name:'Masters',disabled:true},{name:'Transactions',disabled:true},{name:'Configuration',disabled:true}],
   share:[{heading:'E-MAIL'},{name:'Current',key:'Ctrl+M',disabled:true},{name:'Others',disabled:true},{name:'Configuration',disabled:true},{heading:'WHATSAPP'},{name:'Current',key:'Ctrl+Alt+W',disabled:true},{name:'Others',disabled:true}],
   print:[{heading:'REPORTS'},{name:'Current',key:'Ctrl+P',run:()=>window.print()},{name:'Others',disabled:true},{name:'Configuration',disabled:true}],
-  help:[{name:'Tabaja Help',key:'Ctrl+F1',disabled:true},{name:"What's New",disabled:true},{name:'Upgrade',disabled:true},{heading:'SUPPORT'},{name:'Troubleshooting',disabled:true},{name:'Settings',disabled:true},{name:'About',run:()=>toast('Tabaja ERP Alpha 17')} ]
+  help:[{name:'Tabaja Help',key:'Ctrl+F1',disabled:true},{name:"What's New",disabled:true},{name:'Upgrade',disabled:true},{heading:'SUPPORT'},{name:'Troubleshooting',disabled:true},{name:'Settings',disabled:true},{name:'About',run:()=>toast('Tabaja ERP Alpha 19')} ]
  };return maps[kind]||[]
 }
 function companySelectForAlter(){let cs=DB.companies();if(!cs.length){companyForm();return}let x=overlay('Select Company to Alter',`<div class="master-list">${cs.map(c=>`<button class="company-alter-choice" data-id="${c.id}">${esc(c.name)}</button>`).join('')}</div>`);bindMenu('.company-alter-choice');x.querySelectorAll('.company-alter-choice').forEach(b=>b.onclick=()=>{x.remove();companyForm(b.dataset.id)})}
@@ -156,13 +156,31 @@ function veCancelCurrentEdit(){let el=document.getElementById('veCell'+V.activeC
 function veHandleCellEscape(cellIndex){
  V.activeCell=cellIndex;
  veCloseContext(false);
+
+ // Tally reverse navigation inside an item voucher is explicit.  Never let
+ // the browser's natural focus order decide where Esc goes.
  if(cellIndex===8){
-  // Narration -> End of List (first reverse stop), exactly like Tally.
+  veCommit();
+  // Narration -> last committed item's Amount.  This is the crucial step
+  // that prevents the old jump straight to Purchase Ledger.
+  if(veRestoreLastCommittedItem())return true;
+  // Empty voucher: return to the stock list on End of List.
   return veReturnToEndOfListFromNarration();
  }
+
+ // When we reach the item name while reversing, keep the user inside the
+ // item workflow and open the stock list on the current item.  Do not move
+ // to Purchase Ledger until the current item has actually been cleared.
+ if(cellIndex===4&&V.editingItemIndex!==null){
+  const current=String(V.values.item||'').trim();
+  V.activeCell=4;
+  veOpenContext(current,'stock');
+  const idx=VE_LIST.items.findIndex(x=>x.name===current);
+  if(idx>=0){VE_LIST.index=idx;VE_LIST.focusZone='items';veDrawList()}
+  return true;
+ }
+
  if(cellIndex===4&&String(V.values.item||'').trim()===''&&V.items.length){
-  // End of List -> restore the last committed item, then reverse through
-  // Amount -> Rate -> Quantity -> Item. Never skip straight to ledger.
   if(veRestoreLastCommittedItem())return true;
  }
  if(veCancelCurrentEdit())return true;
@@ -375,8 +393,18 @@ const KeyboardEngine={
  handleVoucher(e){
   if(S.screen!=='voucher')return false;
   const k=this.key(e);
+  const activeVoucherCell=e.target?.closest?.('.ve-cell');
+  const panel=document.getElementById('voucherContextPanel');
+  const listOpen=panel&&!panel.hidden&&activeVoucherCell;
+  if(listOpen&&['ARROWDOWN','ARROWUP','ENTER'].includes(k)){
+   this.stop(e);
+   if(k==='ARROWDOWN')veListMove(1);
+   else if(k==='ARROWUP')veListMove(-1);
+   else veListPick();
+   return true;
+  }
   if(k==='ESCAPE'){
-   const cell=e.target?.closest?.('.ve-cell');
+   const cell=activeVoucherCell;
    if(cell){this.stop(e);veHandleCellEscape(Number(cell.dataset.i));return true}
    this.stop(e);veCloseContext(false);veResetDraft();gateway();return true
   }
