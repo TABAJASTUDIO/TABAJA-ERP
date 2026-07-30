@@ -1,0 +1,14 @@
+TABAJA ERP — ALPHA 17 TEST
+
+FIXED IN THIS BUILD
+1. Esc from Narration returns to the last item Amount, then Rate, Quantity and Item.
+2. It no longer jumps directly from Narration to Purchase Ledger.
+3. Create is now a separate action in the list header, not a list item.
+4. Stock list opens on End of List when no item is selected.
+5. Backspace on Ledger/Stock selection clears the whole selected value at once.
+
+TEST
+- Enter two items, go to End of List, then Narration.
+- Press Esc repeatedly: Amount > Rate > Quantity > Item.
+- Open Stock Items: selection must start on End of List, not Create.
+- Select a ledger, press Backspace once: the full ledger name must clear.
