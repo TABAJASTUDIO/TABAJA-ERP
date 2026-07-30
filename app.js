@@ -82,7 +82,8 @@ function voucherEntry(){
  veActivate(V.activeCell);
 }
 function veRawCell(i){let c=VOUCHER_CELLS[i],v=V.values[c.key]||'';return `<div class="ve-cell" id="veCell${i}" data-i="${i}" data-kind="${c.kind}" tabindex="${i===V.activeCell?'0':'-1'}" contenteditable="true" spellcheck="false">${esc(v)}</div>`}
-function veTotal(){let a=Number(V.values.amount||0);if(!a)a=Number(V.values.qty||0)*Number(V.values.rate||0);return Number(a||0).toFixed(2)}
+function veTotal(){return Number(V.values.amount||0).toFixed(2)}
+function veRecalculateAmount(){let q=Number(V.values.qty||0),r=Number(V.values.rate||0),a=q*r;V.values.amount=a?String(a):'';let amount=document.getElementById('veCell7');if(amount&&V.activeCell!==7)amount.textContent=V.values.amount;let total=document.getElementById('voucherTotal');if(total)total.textContent=Number(a||0).toFixed(2)}
 function veBalanceText(x){if(!x)return'';let n=Number(x.balance??x.opening??0),t=x.balanceType||'Dr';return `${Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})} ${t}`}
 function veActivate(i){
  V.activeCell=i;
@@ -93,9 +94,9 @@ function veActivate(i){
 }
 function vePlaceCaretEnd(el){if(!el)return;let r=document.createRange(),s=window.getSelection();r.selectNodeContents(el);r.collapse(false);s.removeAllRanges();s.addRange(r)}
 function veMove(delta){veCommit();veActivate(Math.max(0,Math.min(VOUCHER_CELLS.length-1,V.activeCell+delta)))}
-function veCommit(){let el=document.getElementById('veCell'+V.activeCell);if(!el)return;let c=VOUCHER_CELLS[V.activeCell],t=el.textContent.trim();if(c.kind==='number')t=t.replace(/[^0-9.-]/g,'');if(c.key==='supplierDate'){let iso=veParseDate(t);if(iso){V.voucherDate=iso;t=veDateObject().toLocaleDateString('en-GB');veSyncDateDisplays()}}V.values[c.key]=t;el.textContent=t;let total=document.getElementById('voucherTotal');if(total)total.textContent=veTotal()}
+function veCommit(){let el=document.getElementById('veCell'+V.activeCell);if(!el)return;let c=VOUCHER_CELLS[V.activeCell],t=el.textContent.trim();if(c.kind==='number')t=t.replace(/[^0-9.-]/g,'');if(c.key==='supplierDate'){let iso=veParseDate(t);if(iso){V.voucherDate=iso;t=veDateObject().toLocaleDateString('en-GB');veSyncDateDisplays()}}V.values[c.key]=t;el.textContent=t;if(c.key==='qty'||c.key==='rate')veRecalculateAmount();else{let total=document.getElementById('voucherTotal');if(total)total.textContent=veTotal()}}
 function veBeforeInput(e){let c=VOUCHER_CELLS[Number(e.currentTarget.dataset.i)];if(c.kind==='number'&&e.data&&!/[0-9.\-]/.test(e.data))e.preventDefault();if(e.inputType==='insertParagraph')e.preventDefault()}
-function veInput(e){let i=Number(e.currentTarget.dataset.i),c=VOUCHER_CELLS[i];V.values[c.key]=e.currentTarget.textContent.replace(/\r?\n/g,'');if(c.kind==='ledger'||c.kind==='stock')veOpenContext(V.values[c.key],c.kind);let total=document.getElementById('voucherTotal');if(total)total.textContent=veTotal()}
+function veInput(e){let i=Number(e.currentTarget.dataset.i),c=VOUCHER_CELLS[i];V.values[c.key]=e.currentTarget.textContent.replace(/\r?\n/g,'');if(c.kind==='ledger'||c.kind==='stock')veOpenContext(V.values[c.key],c.kind);if(c.key==='qty'||c.key==='rate')veRecalculateAmount();else{let total=document.getElementById('voucherTotal');if(total)total.textContent=veTotal()}}
 function veCellKeydown(e){
  const kind=VOUCHER_CELLS[Number(e.currentTarget.dataset.i)].kind,panel=document.getElementById('voucherContextPanel');
  if(panel&&!panel.hidden&&(kind==='ledger'||kind==='stock')){
@@ -104,6 +105,7 @@ function veCellKeydown(e){
   if(e.key==='Enter'){e.preventDefault();e.stopPropagation();veListPick();return}
   if(e.key==='Escape'){e.preventDefault();e.stopPropagation();veCloseContext(true);return}
  }
+ if(e.key==='Backspace'&&!e.currentTarget.textContent.trim()){e.preventDefault();e.stopPropagation();veMove(-1);return}
  if(e.key==='Enter'||e.key==='Tab'){e.preventDefault();e.stopPropagation();veMove(e.shiftKey?-1:1);return}
  if(e.key==='ArrowDown'){e.preventDefault();e.stopPropagation();veMove(1);return}
  if(e.key==='ArrowUp'){e.preventDefault();e.stopPropagation();veMove(-1);return}
