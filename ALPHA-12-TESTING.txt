@@ -1,0 +1,9 @@
+Tabaja ERP Alpha 12 — Test Notes
+
+1. K: Company > Alter opens the current company and allows changing its name/details.
+2. K: Company includes Create, Alter, Change, Select and Shut.
+3. Y / O / E / M / P / F1 top menus now open Tally-style dropdowns.
+4. Keyboard letters typed inside voucher fields are treated as typing/search, not global shortcuts.
+5. Stock-item incremental search remains inside List of Stock Items.
+6. From Narration, Esc loads the last committed item for editing; End of List deletes that row.
+7. Alpha 11 voucher dimensions and layout are intentionally unchanged.

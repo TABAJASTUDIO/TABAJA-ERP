@@ -302,3 +302,16 @@ button:focus,input:focus,select:focus,textarea:focus{outline:2px solid #f5b13f;o
 .voucher-qty-cell small{font-weight:400;font-style:italic}
 .ve-list-row span{font-weight:700}
 .ve-list-row small{font-weight:400;font-style:italic}
+
+/* Alpha 12 — top menus and company alteration; Alpha 11 voucher layout remains locked */
+.topnav{overflow:visible}
+.topnav button{white-space:nowrap}
+.top-menu-overlay{position:fixed;inset:0;z-index:10020;background:transparent}
+.top-menu-dropdown{position:absolute;min-width:290px;max-height:calc(100vh - 70px);overflow:auto;background:rgba(249,252,252,.98);border:1px solid #94aeb6;box-shadow:0 8px 20px rgba(0,0,0,.22);padding:8px 0;color:#173043}
+.top-menu-heading{padding:10px 18px 5px;color:#809aa3;font-size:12px;text-transform:uppercase}
+.top-menu-row{width:100%;display:flex;align-items:center;justify-content:space-between;border:0;background:transparent;padding:7px 18px;text-align:left;font-size:15px;color:#173043}
+.top-menu-row kbd{font:inherit;font-weight:600;color:#58727f}
+.top-menu-row:hover,.top-menu-row.active{background:#e7aa45;color:#1e2d35;outline:none}
+.top-menu-row.disabled{color:#aebabc;background:transparent}
+.top-menu-row.disabled kbd{color:#bbc4c6}
+@media(max-width:1100px){.topnav button{font-size:11px;padding-inline:6px}.top-menu-dropdown{min-width:250px}}
