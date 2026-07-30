@@ -9,7 +9,7 @@ function company(){return DB.companies().find(x=>x.id===S.companyId)}
 function data(){let d=DB.data(S.companyId);if(!d){d=seed();DB.save(S.companyId,d)}if(!d.vouchers)d.vouchers=[];if(!d.stockItems)d.stockItems=[];return d}
 function saveData(d){DB.save(S.companyId,d)}
 function hk(label,key){const i=label.toLowerCase().indexOf(key.toLowerCase());if(i<0)return esc(label);return esc(label.slice(0,i))+`<u class="hotkey">${esc(label[i])}</u>`+esc(label.slice(i+1))}
-function shell(title,body){return `<div class="top"><div class="brand">Tabaja ERP <small>Alpha 14</small></div><div class="topnav"><button id="companyTop" data-top-menu="company">K: Company</button><button id="dataTop" data-top-menu="data">Y: Data</button><button id="exchangeTop" data-top-menu="exchange">Z: Exchange</button><button id="gotoTop">G: Go To</button><button id="importTop" data-top-menu="import">O: Import</button><button id="exportTop" data-top-menu="export">E: Export</button><button id="shareTop" data-top-menu="share">M: Share</button><button id="printTop" data-top-menu="print">P: Print</button><button id="helpTop" data-top-menu="help">F1: Help</button></div></div><div class="strip">${esc(title)}</div>${body}<div class="status"><span>Q: Quit</span><span>A: Accept</span><span>Esc: Back</span><span>Enter: Select</span></div>`}
+function shell(title,body){return `<div class="top"><div class="brand">Tabaja ERP <small>Alpha 15</small></div><div class="topnav"><button id="companyTop" data-top-menu="company">K: Company</button><button id="dataTop" data-top-menu="data">Y: Data</button><button id="exchangeTop" data-top-menu="exchange">Z: Exchange</button><button id="gotoTop">G: Go To</button><button id="importTop" data-top-menu="import">O: Import</button><button id="exportTop" data-top-menu="export">E: Export</button><button id="shareTop" data-top-menu="share">M: Share</button><button id="printTop" data-top-menu="print">P: Print</button><button id="helpTop" data-top-menu="help">F1: Help</button></div></div><div class="strip">${esc(title)}</div>${body}<div class="status"><span>Q: Quit</span><span>A: Accept</span><span>Esc: Back</span><span>Enter: Select</span></div>`}
 function render(){if(!S.user)return login();if(!S.companyId||!company())return hub();gateway()}
 function login(){S.screen='login';app.innerHTML=`<div class="login"><form class="loginbox" id="f"><h1>Tabaja ERP</h1><p>Personal Accounting System</p><div class="field"><label>User Name</label><input name="u" value="admin"></div><div class="field"><label>Password</label><input name="p" type="password" value="1234"></div><button class="btn primary" style="width:100%">Sign In</button><div class="note">First login: admin / 1234</div></form></div>`;f.onsubmit=e=>{e.preventDefault();let x=new FormData(f);if(x.get('u')==='admin'&&x.get('p')==='1234'){S.user='admin';sessionStorage.setItem('te_user','admin');hub()}else alert('Incorrect login')}}
 function hub(){S.screen='hub';S.stack=[];let cs=DB.companies();app.innerHTML=shell('Company Selection',`<main class="hub"><div class="toolbar hub-tools"><button class="btn primary" id="newC">${hk('Create Company','C')}</button><button class="btn" id="backup">${hk('Backup Data','B')}</button><button class="btn" id="restore">${hk('Restore Data','R')}</button><button class="btn" id="logout">${hk('Logout','L')}</button></div><div class="cards">${cs.length?cs.map((c,i)=>`<div class="card company-card"><h3>${esc(c.name)}</h3><p>${esc(c.country||'Sierra Leone')}</p><p>Financial year: ${esc(c.fy)}</p><button class="btn primary open-company" data-open="${c.id}">${hk('Open Company','O')}</button></div>`).join(''):'<div class="card"><h3>No company created</h3><p>Create your first company.</p></div>'}</div></main>`);newC.onclick=companyForm;logout.onclick=()=>{sessionStorage.clear();S.user=null;login()};backup.onclick=backupAll;restore.onclick=()=>restoreInput.click();document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openCompany(b.dataset.open));bindTopNav();setTimeout(()=>document.querySelector('.open-company')?.focus(),0)}
@@ -39,7 +39,7 @@ function topMenuItems(kind){
   export:[{heading:'REPORTS'},{name:'Current',key:'Ctrl+E',disabled:true},{name:'Others',disabled:true},{heading:'COMPANY DATA'},{name:'Masters',disabled:true},{name:'Transactions',disabled:true},{name:'Configuration',disabled:true}],
   share:[{heading:'E-MAIL'},{name:'Current',key:'Ctrl+M',disabled:true},{name:'Others',disabled:true},{name:'Configuration',disabled:true},{heading:'WHATSAPP'},{name:'Current',key:'Ctrl+Alt+W',disabled:true},{name:'Others',disabled:true}],
   print:[{heading:'REPORTS'},{name:'Current',key:'Ctrl+P',run:()=>window.print()},{name:'Others',disabled:true},{name:'Configuration',disabled:true}],
-  help:[{name:'Tabaja Help',key:'Ctrl+F1',disabled:true},{name:"What's New",disabled:true},{name:'Upgrade',disabled:true},{heading:'SUPPORT'},{name:'Troubleshooting',disabled:true},{name:'Settings',disabled:true},{name:'About',run:()=>toast('Tabaja ERP Alpha 14')} ]
+  help:[{name:'Tabaja Help',key:'Ctrl+F1',disabled:true},{name:"What's New",disabled:true},{name:'Upgrade',disabled:true},{heading:'SUPPORT'},{name:'Troubleshooting',disabled:true},{name:'Settings',disabled:true},{name:'About',run:()=>toast('Tabaja ERP Alpha 15')} ]
  };return maps[kind]||[]
 }
 function companySelectForAlter(){let cs=DB.companies();if(!cs.length){companyForm();return}let x=overlay('Select Company to Alter',`<div class="master-list">${cs.map(c=>`<button class="company-alter-choice" data-id="${c.id}">${esc(c.name)}</button>`).join('')}</div>`);bindMenu('.company-alter-choice');x.querySelectorAll('.company-alter-choice').forEach(b=>b.onclick=()=>{x.remove();companyForm(b.dataset.id)})}
@@ -138,6 +138,17 @@ function veClearCurrentItem(){V.values.item='';V.values.qty='';V.values.rate='';
 function veBeforeInput(e){let c=VOUCHER_CELLS[Number(e.currentTarget.dataset.i)];if(c.kind==='number'&&e.data&&!/[0-9.\-]/.test(e.data))e.preventDefault();if(e.inputType==='insertParagraph')e.preventDefault()}
 function veInput(e){let i=Number(e.currentTarget.dataset.i),c=VOUCHER_CELLS[i];V.values[c.key]=e.currentTarget.textContent.replace(/\r?\n/g,'');if(c.kind==='ledger'||c.kind==='stock')veOpenContext(V.values[c.key],c.kind);if(c.key==='qty'||c.key==='rate')veRecalculate();else document.getElementById('voucherTotal')&&(document.getElementById('voucherTotal').textContent=veTotal())}
 function veCancelCurrentEdit(){let el=document.getElementById('veCell'+V.activeCell),c=VOUCHER_CELLS[V.activeCell];if(!el)return false;if(el.textContent!==V.editOriginal){el.textContent=V.editOriginal;V.values[c.key]=V.editOriginal;if(c.key==='supplierDate'){V.voucherDate=V.editOriginalDate;veSyncDateDisplays();el.textContent=V.editOriginal}if(c.key==='qty'||c.key==='rate')veRecalculate();vePlaceCaretEnd(el);return true}return false}
+function veHandleCellEscape(cellIndex){
+ V.activeCell=cellIndex;
+ veCloseContext(false);
+ if(cellIndex===8){
+  if(veCancelCurrentEdit())return true;
+  if(veReturnToLastItemFromNarration())return true;
+  veMoveBack();return true;
+ }
+ if(veCancelCurrentEdit())return true;
+ veMoveBack();return true;
+}
 function veCellKeydown(e){
  const cellIndex=Number(e.currentTarget.dataset.i),cellDef=VOUCHER_CELLS[cellIndex],kind=cellDef.kind,panel=document.getElementById('voucherContextPanel');
  V.activeCell=cellIndex;
@@ -145,16 +156,7 @@ function veCellKeydown(e){
  if(panel&&!panel.hidden&&(kind==='ledger'||kind==='stock')){if(e.key==='ArrowDown'){e.preventDefault();e.stopPropagation();veListMove(1);return}if(e.key==='ArrowUp'){e.preventDefault();e.stopPropagation();veListMove(-1);return}if(e.key==='Enter'){e.preventDefault();e.stopPropagation();veListPick();return}if(e.key==='Escape'){e.preventDefault();e.stopPropagation();veCloseContext(true);return}}
  if(e.key==='Enter'||e.key==='Tab'){e.preventDefault();e.stopPropagation();if(cellIndex===6&&!e.shiftKey){if(veFinalizeCurrentItem()){V.activeCell=4;voucherEntry();return}}veMove(e.shiftKey?-1:1);return}
  if(e.key==='ArrowDown'){e.preventDefault();e.stopPropagation();veMove(1);return}if(e.key==='ArrowUp'){e.preventDefault();e.stopPropagation();veMoveBack();return}
- if(e.key==='Escape'){
-  e.preventDefault();e.stopPropagation();veCloseContext(false);
-  if(cellIndex===8){
-   if(veCancelCurrentEdit())return;
-   if(veReturnToLastItemFromNarration())return;
-   veMoveBack();return;
-  }
-  if(veCancelCurrentEdit())return;
-  veMoveBack();return;
- }
+ if(e.key==='Escape'){e.preventDefault();e.stopPropagation();veHandleCellEscape(cellIndex);return}
 }
 let VE_LIST={items:[],index:0,kind:'ledger',query:''};
 function veLedgerItems(q=''){
@@ -184,7 +186,23 @@ function veCreateMaster(kind,prefill){
 }
 function veDateObject(){let d=new Date((V.voucherDate||new Date().toISOString().slice(0,10))+'T00:00:00');return isNaN(d)?new Date():d}
 function veFormatDate(d){return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}).replace(/ /g,'-')}
-function veParseDate(t){t=(t||'').trim();if(!t)return null;if(/^\d{4}-\d{2}-\d{2}$/.test(t))return t;let named=t.match(/^(\d{1,2})[-\s]([A-Za-z]{3})[-\s](\d{2}|\d{4})$/);if(named){let y=named[3].length===2?'20'+named[3]:named[3],d=new Date(`${named[1]} ${named[2]} ${y}`);return isNaN(d)?null:d.toISOString().slice(0,10)}let m=t.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2}|\d{4})$/);if(!m)return null;let y=m[3].length===2?'20'+m[3]:m[3],d=new Date(`${y}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}T00:00:00`);return isNaN(d)?null:`${y}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`}
+function veParseDate(t){
+ t=(t||'').trim();if(!t)return null;
+ if(/^\d{4}-\d{2}-\d{2}$/.test(t))return t;
+ let named=t.match(/^(\d{1,2})[-\s]([A-Za-z]{3})[-\s](\d{2}|\d{4})$/);
+ if(named){let y=named[3].length===2?'20'+named[3]:named[3],d=new Date(`${named[1]} ${named[2]} ${y}`);return isNaN(d)?null:d.toISOString().slice(0,10)}
+ let short=t.match(/^(\d{1,2})[\/\-.](\d{1,2})$/);
+ if(short){
+  let base=veDateObject(),y=String(base.getFullYear()),mo=short[2].padStart(2,'0'),da=short[1].padStart(2,'0');
+  let d=new Date(`${y}-${mo}-${da}T00:00:00`);
+  if(isNaN(d)||d.getFullYear()!=Number(y)||d.getMonth()+1!=Number(mo)||d.getDate()!=Number(da))return null;
+  return `${y}-${mo}-${da}`;
+ }
+ let m=t.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2}|\d{4})$/);if(!m)return null;
+ let y=m[3].length===2?'20'+m[3]:m[3],mo=m[2].padStart(2,'0'),da=m[1].padStart(2,'0'),d=new Date(`${y}-${mo}-${da}T00:00:00`);
+ if(isNaN(d)||d.getFullYear()!=Number(y)||d.getMonth()+1!=Number(mo)||d.getDate()!=Number(da))return null;
+ return `${y}-${mo}-${da}`
+}
 function veSyncDateDisplays(){let d=veDateObject(),top=document.getElementById('voucherDateTop'),day=document.getElementById('voucherDayTop');if(top)top.textContent=veFormatDate(d);if(day)day.textContent=d.toLocaleDateString('en-GB',{weekday:'long'});V.values.supplierDate=veFormatDate(d)}
 function voucherAction(b){
  if(b.classList.contains('disabled'))return;
@@ -296,7 +314,11 @@ const KeyboardEngine={
  handleVoucher(e){
   if(S.screen!=='voucher')return false;
   const k=this.key(e);
-  if(k==='ESCAPE'){if(e.target?.closest?.('.ve-cell'))return true;this.stop(e);veCloseContext(false);veResetDraft();gateway();return true}
+  if(k==='ESCAPE'){
+   const cell=e.target?.closest?.('.ve-cell');
+   if(cell){this.stop(e);veHandleCellEscape(Number(cell.dataset.i));return true}
+   this.stop(e);veCloseContext(false);veResetDraft();gateway();return true
+  }
   const map={F2:'date',F3:'company',F4:'Contra',F5:'Payment',F6:'Receipt',F7:'Journal',F8:'Sales',F9:'Purchase',F10:'types',F12:'config','ALT+F5':'Debit Note','ALT+F6':'Credit Note','ALT+F7':'Stock Journal','CTRL+F7':'Physical Stock'};
   if(map[k]){
    this.stop(e);const v=map[k];

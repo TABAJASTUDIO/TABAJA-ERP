@@ -1,0 +1,8 @@
+TABAJA ERP — ALPHA 15 TEST
+
+1. In the invoice Date field type 31.7 and press Enter.
+   Expected: 31-Jul-26 (using the currently active voucher year).
+2. Complete one or more items, go to Narration, leave it empty, and press Esc.
+   Expected: return to the last committed item, not Purchase Ledger.
+3. If Narration contains newly typed text, first Esc cancels that edit; second Esc returns to the last committed item.
+4. From the last item choose End of List to remove that item and recalculate totals.
