@@ -1,0 +1,11 @@
+TABAjA ERP ALPHA 20 — REVERSE ITEM FIX
+
+Test exactly:
+1. Enter two stock items.
+2. Reach the blank yellow item row / Narration.
+3. Press Esc once.
+   Expected: last completed item is restored; Amount is active.
+4. Press Esc repeatedly.
+   Expected: Amount -> Rate -> Quantity -> Item.
+5. At Item, stock list opens on the same item.
+   It must NOT jump to Purchase Ledger.
