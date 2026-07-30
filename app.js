@@ -9,7 +9,7 @@ function company(){return DB.companies().find(x=>x.id===S.companyId)}
 function data(){let d=DB.data(S.companyId);if(!d){d=seed();DB.save(S.companyId,d)}if(!d.vouchers)d.vouchers=[];if(!d.stockItems)d.stockItems=[];return d}
 function saveData(d){DB.save(S.companyId,d)}
 function hk(label,key){const i=label.toLowerCase().indexOf(key.toLowerCase());if(i<0)return esc(label);return esc(label.slice(0,i))+`<u class="hotkey">${esc(label[i])}</u>`+esc(label.slice(i+1))}
-function shell(title,body){return `<div class="top"><div class="brand">Tabaja ERP <small>V2.4 A4</small></div><div class="topnav"><button>K: Company</button><button>Y: Data</button><button>Z: Exchange</button><button id="gotoTop">G: Go To</button><button>O: Import</button><button>E: Export</button></div></div><div class="strip">${esc(title)}</div>${body}<div class="status"><span>Q: Quit</span><span>A: Accept</span><span>Esc: Back</span><span>Enter: Select</span></div>`}
+function shell(title,body){return `<div class="top"><div class="brand">Tabaja ERP <small>V2.4 A5</small></div><div class="topnav"><button>K: Company</button><button>Y: Data</button><button>Z: Exchange</button><button id="gotoTop">G: Go To</button><button>O: Import</button><button>E: Export</button></div></div><div class="strip">${esc(title)}</div>${body}<div class="status"><span>Q: Quit</span><span>A: Accept</span><span>Esc: Back</span><span>Enter: Select</span></div>`}
 function render(){if(!S.user)return login();if(!S.companyId||!company())return hub();gateway()}
 function login(){S.screen='login';app.innerHTML=`<div class="login"><form class="loginbox" id="f"><h1>Tabaja ERP</h1><p>Personal Accounting System</p><div class="field"><label>User Name</label><input name="u" value="admin"></div><div class="field"><label>Password</label><input name="p" type="password" value="1234"></div><button class="btn primary" style="width:100%">Sign In</button><div class="note">First login: admin / 1234</div></form></div>`;f.onsubmit=e=>{e.preventDefault();let x=new FormData(f);if(x.get('u')==='admin'&&x.get('p')==='1234'){S.user='admin';sessionStorage.setItem('te_user','admin');hub()}else alert('Incorrect login')}}
 function hub(){S.screen='hub';S.stack=[];let cs=DB.companies();app.innerHTML=shell('Company Selection',`<main class="hub"><div class="toolbar hub-tools"><button class="btn primary" id="newC">${hk('Create Company','C')}</button><button class="btn" id="backup">${hk('Backup Data','B')}</button><button class="btn" id="restore">${hk('Restore Data','R')}</button><button class="btn" id="logout">${hk('Logout','L')}</button></div><div class="cards">${cs.length?cs.map((c,i)=>`<div class="card company-card"><h3>${esc(c.name)}</h3><p>${esc(c.country||'Sierra Leone')}</p><p>Financial year: ${esc(c.fy)}</p><button class="btn primary open-company" data-open="${c.id}">${hk('Open Company','O')}</button></div>`).join(''):'<div class="card"><h3>No company created</h3><p>Create your first company.</p></div>'}</div></main>`);newC.onclick=companyForm;logout.onclick=()=>{sessionStorage.clear();S.user=null;login()};backup.onclick=backupAll;restore.onclick=()=>restoreInput.click();document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openCompany(b.dataset.open));setTimeout(()=>document.querySelector('.open-company')?.focus(),0)}
@@ -48,7 +48,7 @@ function voucherEntry(){
   <section class="voucher-paper">
    <div class="voucher-caption">Accounting Voucher Creation</div>
    <div class="voucher-topline"><b>Purchase</b><span>No.&nbsp;&nbsp; <strong>Auto</strong></span></div>
-   <div class="voucher-date-block"><b id="voucherDateTop">${now.toLocaleDateString('en-GB')}</b><small id="voucherDayTop">${now.toLocaleDateString('en-GB',{weekday:'long'})}</small></div>
+   <div class="voucher-date-block"><b id="voucherDateTop">${veFormatDate(now)}</b><small id="voucherDayTop">${now.toLocaleDateString('en-GB',{weekday:'long'})}</small></div>
    <div class="voucher-entry-area">
     <div class="voucher-pair-row"><label>Supplier Invoice No.</label>${veRawCell(0)}<label class="date-label">Date</label>${veRawCell(1)}</div>
     <div class="voucher-single-row"><label>Party A/c name</label>${veRawCell(2)}</div>
@@ -81,9 +81,9 @@ function voucherEntry(){
  document.querySelectorAll('.function-panel button').forEach(b=>b.onclick=()=>voucherAction(b));
  veActivate(V.activeCell);
 }
-function veRawCell(i){let c=VOUCHER_CELLS[i],v=V.values[c.key]||'';return `<div class="ve-cell" id="veCell${i}" data-i="${i}" data-kind="${c.kind}" tabindex="${i===V.activeCell?'0':'-1'}" contenteditable="true" spellcheck="false">${esc(v)}</div>`}
-function veTotal(){return Number(V.values.amount||0).toFixed(2)}
-function veRecalculateAmount(){let q=Number(V.values.qty||0),r=Number(V.values.rate||0),a=q*r;V.values.amount=a?String(a):'';let amount=document.getElementById('veCell7');if(amount&&V.activeCell!==7)amount.textContent=V.values.amount;let total=document.getElementById('voucherTotal');if(total)total.textContent=Number(a||0).toFixed(2)}
+function veRawCell(i){let c=VOUCHER_CELLS[i],v=V.values[c.key]||'';let readonly=c.key==='amount';return `<div class="ve-cell${readonly?' calculated':''}" id="veCell${i}" data-i="${i}" data-kind="${c.kind}" tabindex="${i===V.activeCell?'0':'-1'}" contenteditable="${readonly?'false':'true'}" spellcheck="false">${esc(v)}</div>`}
+function veTotal(){let a=Number(V.values.amount||0);if(!a)a=Number(V.values.qty||0)*Number(V.values.rate||0);return Number(a||0).toFixed(2)}
+function veRecalculate(){let q=Number(V.values.qty||0),r=Number(V.values.rate||0),a=q*r;V.values.amount=(q||r)?String(a):'';let amount=document.getElementById('veCell7');if(amount)amount.textContent=V.values.amount;let total=document.getElementById('voucherTotal');if(total)total.textContent=Number(a||0).toFixed(2)}
 function veBalanceText(x){if(!x)return'';let n=Number(x.balance??x.opening??0),t=x.balanceType||'Dr';return `${Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})} ${t}`}
 function veActivate(i){
  V.activeCell=i;
@@ -93,19 +93,19 @@ function veActivate(i){
  if((kind==='ledger'||kind==='stock')&&!V.suppressContextOnce)veOpenContext(V.values[VOUCHER_CELLS[i].key]||'',kind);else veCloseContext();V.suppressContextOnce=false;
 }
 function vePlaceCaretEnd(el){if(!el)return;let r=document.createRange(),s=window.getSelection();r.selectNodeContents(el);r.collapse(false);s.removeAllRanges();s.addRange(r)}
-function veMove(delta){veCommit();veActivate(Math.max(0,Math.min(VOUCHER_CELLS.length-1,V.activeCell+delta)))}
-function veCommit(){let el=document.getElementById('veCell'+V.activeCell);if(!el)return;let c=VOUCHER_CELLS[V.activeCell],t=el.textContent.trim();if(c.kind==='number')t=t.replace(/[^0-9.-]/g,'');if(c.key==='supplierDate'){let iso=veParseDate(t);if(iso){V.voucherDate=iso;t=veDateObject().toLocaleDateString('en-GB');veSyncDateDisplays()}}V.values[c.key]=t;el.textContent=t;if(c.key==='qty'||c.key==='rate')veRecalculateAmount();else{let total=document.getElementById('voucherTotal');if(total)total.textContent=veTotal()}}
+function veMove(delta){veCommit();let next=Math.max(0,Math.min(VOUCHER_CELLS.length-1,V.activeCell+delta));if(next===7)next=Math.max(0,Math.min(VOUCHER_CELLS.length-1,next+delta));veActivate(next)}
+function veCommit(){let el=document.getElementById('veCell'+V.activeCell);if(!el)return;let c=VOUCHER_CELLS[V.activeCell],t=el.textContent.trim();if(c.kind==='number')t=t.replace(/[^0-9.-]/g,'');if(c.key==='supplierDate'){let iso=veParseDate(t);if(iso){V.voucherDate=iso;t=veFormatDate(veDateObject());veSyncDateDisplays()}}V.values[c.key]=t;el.textContent=t;if(c.key==='qty'||c.key==='rate')veRecalculate();else{let total=document.getElementById('voucherTotal');if(total)total.textContent=veTotal()}}
 function veBeforeInput(e){let c=VOUCHER_CELLS[Number(e.currentTarget.dataset.i)];if(c.kind==='number'&&e.data&&!/[0-9.\-]/.test(e.data))e.preventDefault();if(e.inputType==='insertParagraph')e.preventDefault()}
-function veInput(e){let i=Number(e.currentTarget.dataset.i),c=VOUCHER_CELLS[i];V.values[c.key]=e.currentTarget.textContent.replace(/\r?\n/g,'');if(c.kind==='ledger'||c.kind==='stock')veOpenContext(V.values[c.key],c.kind);if(c.key==='qty'||c.key==='rate')veRecalculateAmount();else{let total=document.getElementById('voucherTotal');if(total)total.textContent=veTotal()}}
+function veInput(e){let i=Number(e.currentTarget.dataset.i),c=VOUCHER_CELLS[i];V.values[c.key]=e.currentTarget.textContent.replace(/\r?\n/g,'');if(c.kind==='ledger'||c.kind==='stock')veOpenContext(V.values[c.key],c.kind);if(c.key==='qty'||c.key==='rate')veRecalculate();else{let total=document.getElementById('voucherTotal');if(total)total.textContent=veTotal()}}
 function veCellKeydown(e){
- const kind=VOUCHER_CELLS[Number(e.currentTarget.dataset.i)].kind,panel=document.getElementById('voucherContextPanel');
+ const cellIndex=Number(e.currentTarget.dataset.i),cellDef=VOUCHER_CELLS[cellIndex],kind=cellDef.kind,panel=document.getElementById('voucherContextPanel');
+ if(e.key==='Backspace'&&e.currentTarget.textContent.length===0){e.preventDefault();e.stopPropagation();veMove(-1);return}
  if(panel&&!panel.hidden&&(kind==='ledger'||kind==='stock')){
   if(e.key==='ArrowDown'){e.preventDefault();e.stopPropagation();veListMove(1);return}
   if(e.key==='ArrowUp'){e.preventDefault();e.stopPropagation();veListMove(-1);return}
   if(e.key==='Enter'){e.preventDefault();e.stopPropagation();veListPick();return}
   if(e.key==='Escape'){e.preventDefault();e.stopPropagation();veCloseContext(true);return}
  }
- if(e.key==='Backspace'&&!e.currentTarget.textContent.trim()){e.preventDefault();e.stopPropagation();veMove(-1);return}
  if(e.key==='Enter'||e.key==='Tab'){e.preventDefault();e.stopPropagation();veMove(e.shiftKey?-1:1);return}
  if(e.key==='ArrowDown'){e.preventDefault();e.stopPropagation();veMove(1);return}
  if(e.key==='ArrowUp'){e.preventDefault();e.stopPropagation();veMove(-1);return}
@@ -125,11 +125,11 @@ function veStockItems(q=''){
   {id:'s4',name:'LB JIFU TENNY (CTN) 25*KG',unit:'CTN',closing:'16.50 CTN'}
  ];q=q.trim().toLowerCase();return items.filter(x=>!q||x.name.toLowerCase().includes(q)).slice(0,30)
 }
-function veOpenContext(q,kind){VE_LIST.kind=kind;VE_LIST.query=(q||'').trim();VE_LIST.items=kind==='stock'?veStockItems(q):veLedgerItems(q);let exact=VE_LIST.items.some(x=>x.name.toLowerCase()===VE_LIST.query.toLowerCase());if(VE_LIST.query&&!exact)VE_LIST.items.push({id:'__create__',name:(kind==='stock'?'Create Stock Item: ':'Create Ledger: ')+VE_LIST.query,create:true,rawName:VE_LIST.query});VE_LIST.index=0;let box=document.getElementById('voucherContextPanel');if(!box)return;box.hidden=false;veDrawList()}
+function veOpenContext(q,kind){document.querySelector('.voucher-tally-screen')?.classList.add('context-open');VE_LIST.kind=kind;VE_LIST.query=(q||'').trim();VE_LIST.items=kind==='stock'?veStockItems(q):veLedgerItems(q);let exact=VE_LIST.items.some(x=>x.name.toLowerCase()===VE_LIST.query.toLowerCase());if(VE_LIST.query&&!exact)VE_LIST.items.push({id:'__create__',name:(kind==='stock'?'Create Stock Item: ':'Create Ledger: ')+VE_LIST.query,create:true,rawName:VE_LIST.query});VE_LIST.index=0;let box=document.getElementById('voucherContextPanel');if(!box)return;box.hidden=false;veDrawList()}
 function veDrawList(){let box=document.getElementById('voucherContextPanel');if(!box)return;let stock=VE_LIST.kind==='stock';box.innerHTML=`<div class="ve-list-title">${stock?'List of Stock Items':'List of Ledger Accounts'}<small>Create</small></div>${stock?'<div class="ve-list-end">♦ End of List</div>':''}${VE_LIST.items.length?VE_LIST.items.map((x,i)=>`<button class="ve-list-row ${x.create?'create-row':''} ${i===VE_LIST.index?'active':''}" data-i="${i}"><span>${esc(x.name)}</span><small>${x.create?'Alt+C':stock?esc(x.closing||''):esc(x.group||'')}</small></button>`).join(''):'<div class="empty-row">No matching entry — type a name to create it</div>'}`;box.querySelectorAll('button').forEach(b=>{b.onmouseenter=()=>{VE_LIST.index=Number(b.dataset.i);veDrawList()};b.onmousedown=e=>{e.preventDefault();VE_LIST.index=Number(b.dataset.i);veListPick()}})}
 function veListMove(d){if(!VE_LIST.items.length)return;VE_LIST.index=(VE_LIST.index+d+VE_LIST.items.length)%VE_LIST.items.length;veDrawList();document.querySelector('.ve-list-row.active')?.scrollIntoView({block:'nearest'})}
 function veListPick(){let x=VE_LIST.items[VE_LIST.index];if(!x)return;if(x.create){veCreateMaster(VE_LIST.kind,x.rawName);return}let c=VOUCHER_CELLS[V.activeCell],el=document.getElementById('veCell'+V.activeCell);V.values[c.key]=x.name;V.selected[c.key]=x;el.textContent=x.name;if(c.key==='party'){let b=document.getElementById('partyBalance');if(b)b.textContent=veBalanceText(x)}if(c.key==='purchaseLedger'){let b=document.getElementById('purchaseBalance');if(b)b.textContent=veBalanceText(x)}veCloseContext(false);V.suppressContextOnce=true;veMove(1)}
-function veCloseContext(refocus=false){let b=document.getElementById('voucherContextPanel');if(b)b.hidden=true;if(refocus){let el=document.getElementById('veCell'+V.activeCell);el?.focus({preventScroll:true});vePlaceCaretEnd(el)}}
+function veCloseContext(refocus=false){let b=document.getElementById('voucherContextPanel');if(b)b.hidden=true;document.querySelector('.voucher-tally-screen')?.classList.remove('context-open');if(refocus){let el=document.getElementById('veCell'+V.activeCell);el?.focus({preventScroll:true});vePlaceCaretEnd(el)}}
 function veCreateMaster(kind,prefill){
  const prevCell=V.activeCell,title=kind==='stock'?'Stock Item Creation':'Ledger Creation',d=data();
  let groupOptions=d.groups.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('');
@@ -138,8 +138,9 @@ function veCreateMaster(kind,prefill){
  f.onsubmit=e=>{e.preventDefault();accept()};x.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();x.closePopup()}else if(e.ctrlKey&&e.key.toLowerCase()==='a'){e.preventDefault();accept()}};setTimeout(()=>f.elements.name.select(),0)
 }
 function veDateObject(){let d=new Date((V.voucherDate||new Date().toISOString().slice(0,10))+'T00:00:00');return isNaN(d)?new Date():d}
-function veParseDate(t){t=(t||'').trim();if(!t)return null;if(/^\d{4}-\d{2}-\d{2}$/.test(t))return t;let m=t.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);if(!m)return null;let d=new Date(`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}T00:00:00`);return isNaN(d)?null:`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`}
-function veSyncDateDisplays(){let d=veDateObject(),top=document.getElementById('voucherDateTop'),day=document.getElementById('voucherDayTop');if(top)top.textContent=d.toLocaleDateString('en-GB');if(day)day.textContent=d.toLocaleDateString('en-GB',{weekday:'long'});V.values.supplierDate=d.toLocaleDateString('en-GB')}
+function veFormatDate(d){return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}).replace(/ /g,'-')}
+function veParseDate(t){t=(t||'').trim();if(!t)return null;if(/^\d{4}-\d{2}-\d{2}$/.test(t))return t;let named=t.match(/^(\d{1,2})[-\s]([A-Za-z]{3})[-\s](\d{2}|\d{4})$/);if(named){let y=named[3].length===2?'20'+named[3]:named[3],d=new Date(`${named[1]} ${named[2]} ${y}`);return isNaN(d)?null:d.toISOString().slice(0,10)}let m=t.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2}|\d{4})$/);if(!m)return null;let y=m[3].length===2?'20'+m[3]:m[3],d=new Date(`${y}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}T00:00:00`);return isNaN(d)?null:`${y}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`}
+function veSyncDateDisplays(){let d=veDateObject(),top=document.getElementById('voucherDateTop'),day=document.getElementById('voucherDayTop');if(top)top.textContent=veFormatDate(d);if(day)day.textContent=d.toLocaleDateString('en-GB',{weekday:'long'});V.values.supplierDate=veFormatDate(d)}
 function voucherAction(b){
  if(b.classList.contains('disabled'))return;
  if(b.dataset.type){if(b.dataset.type!=='Purchase'){toast('Purchase is the active test voucher in this build.');return}V.type='Purchase';voucherEntry();return}
