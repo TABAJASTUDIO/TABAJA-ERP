@@ -1,0 +1,14 @@
+TABAJA ERP — ALPHA 8 TESTING
+
+Main corrections in this build:
+1. ESC inside Purchase Voucher returns directly to Gateway.
+2. Quit Voucher confirmation was removed from internal pages.
+3. Quit Yes/No remains only on the main Gateway.
+4. Party Current Balance is aligned directly below the Party A/c value.
+5. Purchase Ledger Current Balance is aligned directly below the ledger value.
+6. Narration now follows Tally geometry: label above a compact, wider entry box.
+7. Voucher rows and Qty / Rate / Per / Amount columns were tightened.
+
+Please test ESC from:
+- Purchase Voucher -> Gateway directly
+- Gateway -> Quit Yes/No

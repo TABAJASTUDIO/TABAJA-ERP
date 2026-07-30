@@ -128,3 +128,69 @@ button:focus,input:focus,select:focus,textarea:focus{outline:2px solid #f5b13f;o
 .ve-functions .fp-gap{height:15px}.ve-functions .permanent-selected{background:#e6b96e!important}
 .status{height:24px!important;min-height:24px!important;font-size:10px!important}
 @media(max-width:1000px){.voucher-tally-screen{grid-template-columns:minmax(0,1fr) 165px}.voucher-tally-screen.context-open{grid-template-columns:minmax(0,1fr) 235px 165px}.voucher-item-head,.voucher-item-row{grid-template-columns:minmax(260px,1fr) 80px 80px 38px 100px}}
+
+/* Alpha 8 — corrected Tally alignment and ESC navigation */
+.voucher-tally-screen{
+  font-size:10.5px;
+}
+.voucher-entry-area{padding-top:3px}
+.voucher-pair-row,.voucher-single-row{min-height:17px}
+.voucher-pair-row{grid-template-columns:138px 185px 42px 105px}
+.voucher-single-row{grid-template-columns:138px minmax(220px,320px)}
+.voucher-balance{
+  grid-template-columns:138px minmax(220px,320px);
+  height:15px;
+  line-height:15px;
+}
+.voucher-balance span{
+  padding-left:6px;
+  color:#5f6464;
+  font-style:italic;
+}
+.voucher-balance b{
+  text-align:left;
+  padding-left:3px;
+  font-weight:400;
+  font-style:italic;
+  white-space:nowrap;
+}
+.voucher-item-head{
+  grid-template-columns:minmax(350px,1fr) 88px 82px 38px 108px;
+}
+.voucher-item-row{
+  grid-template-columns:minmax(350px,1fr) 88px 82px 38px 108px;
+}
+.voucher-narration{
+  display:block;
+  width:min(610px,calc(100% - 380px));
+  min-width:420px;
+  min-height:35px;
+  border-top:0;
+  border-bottom:0;
+  padding:0;
+  margin:0;
+}
+.voucher-narration label{
+  display:block;
+  height:13px;
+  line-height:13px;
+  padding:0 0 0 2px;
+  font-size:10px;
+  font-weight:400;
+}
+.voucher-narration .ve-cell{
+  display:block;
+  width:100%;
+  box-sizing:border-box;
+  height:21px;
+  line-height:19px;
+  padding:1px 4px;
+  border:1px solid #858b89;
+  background:#f3d59c;
+}
+.voucher-total{bottom:35px}
+.voucher-flags{bottom:37px}
+@media(max-width:1000px){
+  .voucher-narration{width:min(560px,calc(100% - 320px));min-width:360px}
+  .voucher-item-head,.voucher-item-row{grid-template-columns:minmax(260px,1fr) 78px 76px 36px 96px}
+}
