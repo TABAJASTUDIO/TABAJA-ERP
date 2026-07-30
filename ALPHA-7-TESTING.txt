@@ -1,0 +1,14 @@
+TABAJA ERP — ALPHA 7
+
+Voucher screen rebuilt with compact Tally-style geometry.
+
+Check:
+1. Header and voucher fields are tighter.
+2. Item columns align: Name / Quantity / Rate / per / Amount.
+3. Item shows secondary KG line when name contains 20KG or 25KG.
+4. Quantity × Rate updates Amount and bottom totals.
+5. End of List appears below the item row.
+6. Narration is compact at bottom-left.
+7. Quantity and amount totals appear at bottom-right.
+8. Function panel remains fixed and compact.
+9. Keyboard behavior from Alpha 6 remains active.

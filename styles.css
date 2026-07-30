@@ -89,3 +89,42 @@ button:focus,input:focus,select:focus,textarea:focus{outline:2px solid #f5b13f;o
  .voucher-tally-screen{grid-template-columns:minmax(0,1fr) 170px}
  .voucher-tally-screen.context-open{grid-template-columns:minmax(0,1fr) 245px 170px}
 }
+
+/* Alpha 7 — compact Tally voucher geometry */
+.voucher-tally-screen{height:calc(100vh - 75px);grid-template-columns:minmax(0,1fr) 178px;background:#f2f3ef;font-family:Tahoma,Arial,sans-serif;font-size:11px}
+.voucher-tally-screen.context-open{grid-template-columns:minmax(0,1fr) 285px 178px}
+.voucher-paper{background:#f7f8f4;border-right:1px solid #748a91}
+.voucher-caption{height:15px;line-height:15px;padding:0 6px;background:#9ecbd4;font-size:9px}
+.voucher-topline{height:18px;padding:0 7px;gap:18px;border-bottom:1px solid #6f7a7b}
+.voucher-topline>b{min-width:68px}.voucher-topline span{font-size:10px}
+.voucher-date-block{top:36px;right:10px;font-size:9px;line-height:1.12}
+.voucher-entry-area{padding-top:4px}
+.voucher-pair-row,.voucher-single-row{min-height:18px}
+.voucher-pair-row{grid-template-columns:138px 175px 42px 105px}
+.voucher-single-row{grid-template-columns:138px minmax(210px,300px)}
+.voucher-entry-area label,.voucher-narration label{padding-left:6px}
+.voucher-balance{grid-template-columns:138px 300px;height:15px;line-height:15px}
+.ve-cell{height:17px;line-height:17px;padding:0 3px;font-size:11px}
+.ve-cell.active{background:#e9c98e;box-shadow:inset 0 0 0 1px #9a783c}
+.voucher-item-head{height:18px;grid-template-columns:minmax(350px,1fr) 92px 92px 42px 112px;align-items:center;border-top:1px solid #8b9292;border-bottom:1px solid #8b9292}
+.voucher-item-head>*{padding:0 4px}.voucher-item-head span{text-align:right}
+.voucher-item-row{grid-template-columns:minmax(350px,1fr) 92px 92px 42px 112px;min-height:35px;border-bottom:0;align-items:start}
+.voucher-item-row>.ve-cell,.voucher-item-name-cell,.voucher-qty-cell{min-width:0}
+.voucher-item-name-cell,.voucher-qty-cell{position:relative;min-height:35px}
+.voucher-item-name-cell>.ve-cell,.voucher-qty-cell>.ve-cell{width:100%;box-sizing:border-box}
+.voucher-item-name-cell small,.voucher-qty-cell small{display:block;height:14px;line-height:14px;color:#333;font-size:9.5px;padding:0 4px;white-space:nowrap}
+.voucher-qty-cell{text-align:right;border-left:0}.voucher-qty-cell .ve-cell{text-align:right}.voucher-qty-cell small{text-align:right}
+.voucher-item-row>.ve-cell{border-left:0!important;text-align:right;padding-top:0}
+.voucher-unit{border-left:0;padding-top:1px;text-align:center}
+.voucher-end-list{height:18px;line-height:18px;padding-left:7px;font-size:10px;font-weight:600}
+.voucher-empty-space{flex:1;min-height:120px}
+.voucher-narration{grid-template-columns:104px minmax(0,550px);min-height:27px;border-top:1px solid #7a8587;border-bottom:0;align-items:start;font-weight:400}
+.voucher-narration label{padding-top:3px}
+.voucher-narration .ve-cell{height:22px;line-height:22px;border:1px solid #8b8f8e;border-top:0}
+.voucher-total{position:absolute;right:0;bottom:27px;width:360px;height:26px;display:grid;grid-template-columns:150px 1fr;align-items:center;padding:0 9px;border-top:1px solid #858b8b;font-size:11px;gap:0}
+.voucher-total span{text-align:right;padding-right:25px}.voucher-total b{text-align:right;font-size:11px}
+.voucher-flags{bottom:29px}
+.ve-functions{background:#dbe6e8}.ve-functions button{height:29px!important;min-height:29px;font-size:10.5px!important;padding:3px 5px!important;border-bottom:1px solid #aab7ba}
+.ve-functions .fp-gap{height:15px}.ve-functions .permanent-selected{background:#e6b96e!important}
+.status{height:24px!important;min-height:24px!important;font-size:10px!important}
+@media(max-width:1000px){.voucher-tally-screen{grid-template-columns:minmax(0,1fr) 165px}.voucher-tally-screen.context-open{grid-template-columns:minmax(0,1fr) 235px 165px}.voucher-item-head,.voucher-item-row{grid-template-columns:minmax(260px,1fr) 80px 80px 38px 100px}}

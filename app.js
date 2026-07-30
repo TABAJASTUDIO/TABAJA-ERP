@@ -9,7 +9,7 @@ function company(){return DB.companies().find(x=>x.id===S.companyId)}
 function data(){let d=DB.data(S.companyId);if(!d){d=seed();DB.save(S.companyId,d)}if(!d.vouchers)d.vouchers=[];if(!d.stockItems)d.stockItems=[];return d}
 function saveData(d){DB.save(S.companyId,d)}
 function hk(label,key){const i=label.toLowerCase().indexOf(key.toLowerCase());if(i<0)return esc(label);return esc(label.slice(0,i))+`<u class="hotkey">${esc(label[i])}</u>`+esc(label.slice(i+1))}
-function shell(title,body){return `<div class="top"><div class="brand">Tabaja ERP <small>Alpha 6</small></div><div class="topnav"><button>K: Company</button><button>Y: Data</button><button>Z: Exchange</button><button id="gotoTop">G: Go To</button><button>O: Import</button><button>E: Export</button></div></div><div class="strip">${esc(title)}</div>${body}<div class="status"><span>Q: Quit</span><span>A: Accept</span><span>Esc: Back</span><span>Enter: Select</span></div>`}
+function shell(title,body){return `<div class="top"><div class="brand">Tabaja ERP <small>Alpha 7</small></div><div class="topnav"><button>K: Company</button><button>Y: Data</button><button>Z: Exchange</button><button id="gotoTop">G: Go To</button><button>O: Import</button><button>E: Export</button></div></div><div class="strip">${esc(title)}</div>${body}<div class="status"><span>Q: Quit</span><span>A: Accept</span><span>Esc: Back</span><span>Enter: Select</span></div>`}
 function render(){if(!S.user)return login();if(!S.companyId||!company())return hub();gateway()}
 function login(){S.screen='login';app.innerHTML=`<div class="login"><form class="loginbox" id="f"><h1>Tabaja ERP</h1><p>Personal Accounting System</p><div class="field"><label>User Name</label><input name="u" value="admin"></div><div class="field"><label>Password</label><input name="p" type="password" value="1234"></div><button class="btn primary" style="width:100%">Sign In</button><div class="note">First login: admin / 1234</div></form></div>`;f.onsubmit=e=>{e.preventDefault();let x=new FormData(f);if(x.get('u')==='admin'&&x.get('p')==='1234'){S.user='admin';sessionStorage.setItem('te_user','admin');hub()}else alert('Incorrect login')}}
 function hub(){S.screen='hub';S.stack=[];let cs=DB.companies();app.innerHTML=shell('Company Selection',`<main class="hub"><div class="toolbar hub-tools"><button class="btn primary" id="newC">${hk('Create Company','C')}</button><button class="btn" id="backup">${hk('Backup Data','B')}</button><button class="btn" id="restore">${hk('Restore Data','R')}</button><button class="btn" id="logout">${hk('Logout','L')}</button></div><div class="cards">${cs.length?cs.map((c,i)=>`<div class="card company-card"><h3>${esc(c.name)}</h3><p>${esc(c.country||'Sierra Leone')}</p><p>Financial year: ${esc(c.fy)}</p><button class="btn primary open-company" data-open="${c.id}">${hk('Open Company','O')}</button></div>`).join(''):'<div class="card"><h3>No company created</h3><p>Create your first company.</p></div>'}</div></main>`);newC.onclick=companyForm;logout.onclick=()=>{sessionStorage.clear();S.user=null;login()};backup.onclick=backupAll;restore.onclick=()=>restoreInput.click();document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openCompany(b.dataset.open));setTimeout(()=>document.querySelector('.open-company')?.focus(),0)}
@@ -56,11 +56,11 @@ function voucherEntry(){
     <div class="voucher-single-row"><label>Purchase ledger</label>${veRawCell(3)}</div>
     <div class="voucher-balance"><span>Current balance</span><b id="purchaseBalance">${veBalanceText(V.selected.purchaseLedger)}</b></div>
     <div class="voucher-item-head"><b>Name of Item</b><span>Quantity</span><span>Rate</span><span>per</span><span>Amount</span></div>
-    <div class="voucher-item-row">${veRawCell(4)}${veRawCell(5)}${veRawCell(6)}<div class="voucher-unit">CTN</div>${veRawCell(7)}</div>
+    <div class="voucher-item-row"><div class="voucher-item-name-cell">${veRawCell(4)}<small id="voucherItemWeight">${veItemWeight()}</small></div><div class="voucher-qty-cell">${veRawCell(5)}<small id="voucherQtyWeight">${veQtyWeight()}</small></div>${veRawCell(6)}<div class="voucher-unit">CTN</div>${veRawCell(7)}</div><div class="voucher-end-list">◆ End of List</div>
    </div>
    <div class="voucher-empty-space"></div>
    <div class="voucher-narration"><label>Narration</label>${veRawCell(8)}</div>
-   <div class="voucher-total"><span>Total</span><b id="voucherTotal">${veTotal()}</b></div>
+   <div class="voucher-total"><span class="voucher-total-qty" id="voucherTotalQty">${veTotalQty()}</span><b id="voucherTotal">${veTotal()}</b></div>
    <div class="voucher-flags">${V.optional?'<b>OPTIONAL</b>':''}${V.postDated?'<b>POST-DATED</b>':''}</div>
   </section>
   <aside class="voucher-context-panel" id="voucherContextPanel" hidden></aside>
@@ -82,8 +82,12 @@ function voucherEntry(){
  veActivate(V.activeCell);
 }
 function veRawCell(i){let c=VOUCHER_CELLS[i],v=V.values[c.key]||'';let readonly=c.key==='amount';return `<div class="ve-cell${readonly?' calculated':''}" id="veCell${i}" data-i="${i}" data-kind="${c.kind}" tabindex="${i===V.activeCell?'0':'-1'}" contenteditable="${readonly?'false':'true'}" spellcheck="false">${esc(v)}</div>`}
-function veTotal(){let a=Number(V.values.amount||0);if(!a)a=Number(V.values.qty||0)*Number(V.values.rate||0);return Number(a||0).toFixed(2)}
-function veRecalculate(){let q=Number(V.values.qty||0),r=Number(V.values.rate||0),a=q*r;V.values.amount=(q||r)?String(a):'';let amount=document.getElementById('veCell7');if(amount)amount.textContent=V.values.amount;let total=document.getElementById('voucherTotal');if(total)total.textContent=Number(a||0).toFixed(2)}
+function veTotal(){let a=Number(V.values.amount||0);if(!a)a=Number(V.values.qty||0)*Number(V.values.rate||0);return Number(a||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function veItemKg(){let n=String(V.selected.item?.name||V.values.item||'').match(/(20|25)\s*\*?\s*KG/i);return n?Number(n[1]):0}
+function veItemWeight(){let kg=veItemKg();return kg?'('+kg.toFixed(2)+' KG)':''}
+function veQtyWeight(){let kg=veItemKg(),q=Number(V.values.qty||0);return kg&&q?'('+(kg*q).toFixed(2)+' KG)':''}
+function veTotalQty(){let q=Number(V.values.qty||0);return q?q.toFixed(2)+' CTN':''}
+function veRecalculate(){let q=Number(V.values.qty||0),r=Number(V.values.rate||0),a=q*r;V.values.amount=(q||r)?String(a):'';let amount=document.getElementById('veCell7');if(amount)amount.textContent=a?a.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'';let total=document.getElementById('voucherTotal');if(total)total.textContent=Number(a||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});let tq=document.getElementById('voucherTotalQty');if(tq)tq.textContent=veTotalQty();let qw=document.getElementById('voucherQtyWeight');if(qw)qw.textContent=veQtyWeight()}
 function veBalanceText(x){if(!x)return'';let n=Number(x.balance??x.opening??0),t=x.balanceType||'Dr';return `${Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})} ${t}`}
 function veActivate(i){
  V.activeCell=i;
