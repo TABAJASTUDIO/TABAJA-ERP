@@ -1,0 +1,11 @@
+TABAJA ERP ALPHA 22 — VOUCHER REVERSE CELL PATH
+
+Test only this sequence:
+1. Enter at least two stock items.
+2. Go to End of List, then Narration.
+3. Press Esc: focus must return to Amount of the last item.
+4. Press Esc: focus must return to Rate.
+5. Press Esc: focus must return to Quantity.
+6. Press Esc: focus must return to Item name.
+7. Press Backspace while on Item: remove one character at a time, not the full name.
+8. At no point may focus jump to Purchase Ledger.
