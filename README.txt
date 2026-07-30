@@ -1,18 +1,23 @@
-Tabaja ERP V2.2
+Tabaja ERP V2.3 — Keyboard Navigation Test Build
 
-Login: admin / 1234
+How to open:
+1. Extract the ZIP.
+2. Open index.html in Chrome or Edge.
+3. Login: admin / 1234
 
-New in V2.2:
-- Keyboard hotkeys and bold shortcut letters
-- C opens Master Creation directly
-- D opens Display More Reports; D again opens Day Book
-- Display > Account Books > Ledger
-- Ledger list with live search and keyboard navigation
-- Ledger display with opening/current/closing balance
-- A opens Alter; Ledger can be selected and edited
-- Go To shortcuts: DAL, CAL, AAL, DD, TB, CHA
-- Esc hierarchy and Quit Yes/No popup
-- Company Selection focuses Open Company automatically
+Main keyboard tests:
+- Arrow Up / Down + Enter in Gateway menus
+- Esc returns one step
+- G opens Go To overlay over the current screen
+- Esc closes Go To and preserves the current screen
+- DAL = Ledger list
+- DD = Day Book
+- TB = Trial Balance
+- COA = Chart of Accounts
+- CAL = Create Ledger
+- AAL = Alter Ledger
+- C = Create menu from Gateway
+- D = Display menu from Gateway
+- Ctrl+A = Save Ledger form
 
-Upload index.html, app.js, styles.css and README.txt to the repository root.
-Then refresh with Ctrl+F5.
+Data is saved locally in the browser using localStorage.
