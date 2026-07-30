@@ -1,0 +1,17 @@
+TABAJA ERP - ALPHA 13 TESTING
+
+FIX 1 - ALTER COMPANY
+1. Open K: Company > Alter.
+2. Change the company name.
+3. Save with Ctrl+A or the Alter Company button.
+4. Confirm the new name appears immediately on Gateway and remains after refresh.
+
+FIX 2 - RETURN FROM NARRATION TO LAST ITEM
+1. Enter two stock items and go to Narration.
+2. If Narration has unconfirmed text, first Esc cancels that text.
+3. Press Esc again.
+4. Focus must return to the last saved item and open List of Stock Items with End of List selected.
+5. Press Enter on End of List to remove that last item.
+6. Totals must update and focus returns to Narration.
+
+No visual layout dimensions were changed from Alpha 12.
