@@ -9,7 +9,7 @@ function company(){return DB.companies().find(x=>x.id===S.companyId)}
 function data(){let d=DB.data(S.companyId);if(!d){d=seed();DB.save(S.companyId,d)}if(!d.vouchers)d.vouchers=[];return d}
 function saveData(d){DB.save(S.companyId,d)}
 function hk(label,key){const i=label.toLowerCase().indexOf(key.toLowerCase());if(i<0)return esc(label);return esc(label.slice(0,i))+`<u class="hotkey">${esc(label[i])}</u>`+esc(label.slice(i+1))}
-function shell(title,body){return `<div class="top"><div class="brand">Tabaja ERP <small>V2.2</small></div><div class="topnav"><button>K: Company</button><button>Y: Data</button><button>Z: Exchange</button><button id="gotoTop">G: Go To</button><button>O: Import</button><button>E: Export</button></div></div><div class="strip">${esc(title)}</div>${body}<div class="status"><span>Q: Quit</span><span>A: Accept</span><span>Esc: Back</span><span>Enter: Select</span></div>`}
+function shell(title,body){return `<div class="top"><div class="brand">Tabaja ERP <small>V2.3</small></div><div class="topnav"><button>K: Company</button><button>Y: Data</button><button>Z: Exchange</button><button id="gotoTop">G: Go To</button><button>O: Import</button><button>E: Export</button></div></div><div class="strip">${esc(title)}</div>${body}<div class="status"><span>Q: Quit</span><span>A: Accept</span><span>Esc: Back</span><span>Enter: Select</span></div>`}
 function render(){if(!S.user)return login();if(!S.companyId||!company())return hub();gateway()}
 function login(){S.screen='login';app.innerHTML=`<div class="login"><form class="loginbox" id="f"><h1>Tabaja ERP</h1><p>Personal Accounting System</p><div class="field"><label>User Name</label><input name="u" value="admin"></div><div class="field"><label>Password</label><input name="p" type="password" value="1234"></div><button class="btn primary" style="width:100%">Sign In</button><div class="note">First login: admin / 1234</div></form></div>`;f.onsubmit=e=>{e.preventDefault();let x=new FormData(f);if(x.get('u')==='admin'&&x.get('p')==='1234'){S.user='admin';sessionStorage.setItem('te_user','admin');hub()}else alert('Incorrect login')}}
 function hub(){S.screen='hub';S.stack=[];let cs=DB.companies();app.innerHTML=shell('Company Selection',`<main class="hub"><div class="toolbar hub-tools"><button class="btn primary" id="newC">${hk('Create Company','C')}</button><button class="btn" id="backup">${hk('Backup Data','B')}</button><button class="btn" id="restore">${hk('Restore Data','R')}</button><button class="btn" id="logout">${hk('Logout','L')}</button></div><div class="cards">${cs.length?cs.map((c,i)=>`<div class="card company-card"><h3>${esc(c.name)}</h3><p>${esc(c.country||'Sierra Leone')}</p><p>Financial year: ${esc(c.fy)}</p><button class="btn primary open-company" data-open="${c.id}">${hk('Open Company','O')}</button></div>`).join(''):'<div class="card"><h3>No company created</h3><p>Create your first company.</p></div>'}</div></main>`);newC.onclick=companyForm;logout.onclick=()=>{sessionStorage.clear();S.user=null;login()};backup.onclick=backupAll;restore.onclick=()=>restoreInput.click();document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openCompany(b.dataset.open));setTimeout(()=>document.querySelector('.open-company')?.focus(),0)}
@@ -26,7 +26,41 @@ function createLedger(editId=null){document.getElementById('ov')?.remove();S.scr
 function ledgerList(mode='display'){document.getElementById('ov')?.remove();S.screen='ledgerList';let d=data();let o=overlay(mode==='alter'?'Select Ledger to Alter':'Select Ledger',`<div class="list-search"><label>Name of Ledger</label><input id="ledgerSearch" autocomplete="off"></div><div class="scroll-list" id="ledgerRows"></div>`);const draw=()=>{let q=ledgerSearch.value.toLowerCase();let rows=d.ledgers.filter(l=>l.name.toLowerCase().includes(q)||String(l.alias||'').toLowerCase().includes(q));ledgerRows.innerHTML=rows.length?rows.map(l=>`<button class="list-row" data-id="${l.id}">${esc(l.name)}</button>`).join(''):'<div class="empty-row">No ledgers found</div>';bindMenu('#ledgerRows .list-row');document.querySelectorAll('#ledgerRows .list-row').forEach(b=>b.onclick=()=>mode==='alter'?createLedger(b.dataset.id):ledgerDisplay(b.dataset.id))};ledgerSearch.oninput=draw;draw();setTimeout(()=>ledgerSearch.focus(),0)}
 function ledgerDisplay(id){document.getElementById('ov')?.remove();S.screen='ledgerDisplay';let d=data(),l=d.ledgers.find(x=>x.id===id),g=d.groups.find(x=>x.id===l.groupId),vs=d.vouchers.filter(v=>v.lines?.some(x=>x.ledgerId===id));let signed=(l.balanceType==='Cr'?-1:1)*Number(l.opening||0);let current=vs.reduce((sum,v)=>sum+v.lines.filter(x=>x.ledgerId===id).reduce((a,x)=>a+Number(x.debit||0)-Number(x.credit||0),0),0);let closing=signed+current;app.innerHTML=shell(company().name,`<main class="hub ledger-page"><div class="report-head"><h2>Ledger Vouchers</h2><div><b>Ledger: ${esc(l.name)}</b><br><small>Under: ${esc(g?.name||'')}</small></div></div><table class="table"><thead><tr><th>Date</th><th>Particulars</th><th>Vch Type</th><th>Vch No.</th><th>Debit</th><th>Credit</th></tr></thead><tbody>${vs.length?vs.map(v=>`<tr><td>${esc(v.date)}</td><td>${esc(v.particulars||'')}</td><td>${esc(v.type||'')}</td><td>${esc(v.number||'')}</td><td class="right">${Number(v.debit||0).toFixed(2)}</td><td class="right">${Number(v.credit||0).toFixed(2)}</td></tr>`).join(''):`<tr><td colspan="6" class="empty-row">No voucher entries yet</td></tr>`}</tbody></table><div class="balances"><div>Opening Balance: <b>${Math.abs(signed).toFixed(2)} ${signed<0?'Cr':'Dr'}</b></div><div>Current Total: <b>${Math.abs(current).toFixed(2)} ${current<0?'Cr':'Dr'}</b></div><div>Closing Balance: <b>${Math.abs(closing).toFixed(2)} ${closing<0?'Cr':'Dr'}</b></div></div></main>`)}
 function chart(){S.screen='chart';let d=data();let rows=d.groups.map(g=>{let ls=d.ledgers.filter(l=>l.groupId===g.id);return `<tr><td><b>${esc(g.name)}</b>${g.system?' <span class="badge">System</span>':''}</td><td>${esc(g.parent)}</td><td>${esc(g.nature)}</td><td>${ls.length}</td></tr>${ls.map(l=>`<tr><td style="padding-left:35px">↳ ${esc(l.name)}</td><td>${esc(g.name)}</td><td>Ledger</td><td class="right">${l.opening.toFixed(2)} ${esc(l.balanceType)}</td></tr>`).join('')}`}).join('');app.innerHTML=shell(company().name,`<main class="hub"><h2>Chart of Accounts</h2><table class="table"><thead><tr><th>Name</th><th>Under</th><th>Type / Nature</th><th>Count / Opening</th></tr></thead><tbody>${rows}</tbody></table></main>`)}
-function goToPopup(){if(document.getElementById('ov'))return;let o=overlay('Go To',`<div class="list-search"><input id="gotoInput" placeholder="Type DAL, CAL, AAL, DD, TB..."></div><div class="goto-help">DAL = Display Account Books Ledger<br>CAL = Create Ledger<br>AAL = Alter Ledger<br>DD = Day Book<br>TB = Trial Balance<br>CHA = Chart of Accounts</div>`);setTimeout(()=>gotoInput.focus(),0);gotoInput.onkeydown=e=>{if(e.key==='Enter'){let code=gotoInput.value.trim().toUpperCase();o.remove();if(code==='DAL')ledgerList('display');else if(code==='CAL')createLedger();else if(code==='AAL')ledgerList('alter');else if(code==='DD')toast('Day Book will show vouchers after voucher entry is added.');else if(code==='TB')toast('Trial Balance is prepared for a later build.');else if(code==='CHA')chart();else toast('Shortcut not found')}}}
+function goToPopup(){
+ if(document.getElementById('gotoOv'))return;
+ const previousScreen=S.screen;
+ const items=[
+  {name:'Ledger Vouchers',path:'Display > Account Books > Ledger',code:'DAL',run:()=>ledgerList('display')},
+  {name:'Day Book',path:'Display > Day Book',code:'DD',run:()=>toast('Day Book will show vouchers after voucher entry is added.')},
+  {name:'Trial Balance',path:'Display > Trial Balance',code:'TB',run:()=>toast('Trial Balance is prepared for a later build.')},
+  {name:'Chart of Accounts',path:'Masters > Chart of Accounts',code:'CHA',run:chart},
+  {name:'Create Ledger',path:'Create > Ledger',code:'CAL',run:()=>createLedger()},
+  {name:'Alter Ledger',path:'Alter > Ledger',code:'AAL',run:()=>ledgerList('alter')},
+  {name:'Create Group',path:'Create > Group',code:'CAG',run:()=>createGroup()},
+  {name:'Gateway of Tabaja ERP',path:'Gateway',code:'GW',run:gateway}
+ ];
+ let x=document.createElement('div');x.id='gotoOv';x.className='goto-overlay';
+ x.innerHTML=`<div class="goto-bar"><div class="goto-caption">Go To</div><input id="gotoInput" autocomplete="off" placeholder="Search reports and masters..."><div class="goto-hint">Enter: Open &nbsp; Esc: Close</div></div><div class="goto-results" id="gotoResults"></div>`;
+ document.body.appendChild(x);
+ let filtered=items.slice(),index=0;
+ const draw=()=>{
+  const q=gotoInput.value.trim().toLowerCase();
+  filtered=items.filter(i=>!q||i.name.toLowerCase().includes(q)||i.path.toLowerCase().includes(q)||i.code.toLowerCase().includes(q));
+  if(index>=filtered.length)index=0;
+  gotoResults.innerHTML=filtered.length?filtered.map((i,n)=>`<button class="goto-row ${n===index?'active':''}" data-n="${n}"><span><b>${esc(i.name)}</b><small>${esc(i.path)}</small></span><kbd>${esc(i.code)}</kbd></button>`).join(''):'<div class="empty-row">No matching report</div>';
+  gotoResults.querySelectorAll('.goto-row').forEach(b=>{b.onclick=()=>open(Number(b.dataset.n));b.onmouseenter=()=>{index=Number(b.dataset.n);draw()}})
+ };
+ const close=()=>{x.remove();S.screen=previousScreen};
+ const open=n=>{let item=filtered[n];if(!item)return; x.remove();item.run()};
+ gotoInput.oninput=()=>{index=0;draw()};
+ gotoInput.onkeydown=e=>{
+  if(e.key==='Escape'){e.preventDefault();close()}
+  else if(e.key==='ArrowDown'){e.preventDefault();if(filtered.length){index=(index+1)%filtered.length;draw()}}
+  else if(e.key==='ArrowUp'){e.preventDefault();if(filtered.length){index=(index-1+filtered.length)%filtered.length;draw()}}
+  else if(e.key==='Enter'){e.preventDefault();open(index)}
+ };
+ draw();setTimeout(()=>gotoInput.focus(),0)
+}
 function quitPopup(text,onYes){if(document.getElementById('quitOv'))return;let q=document.createElement('div');q.id='quitOv';q.className='modal-backdrop quit-backdrop';q.innerHTML=`<div class="quit-box"><div>${esc(text)}</div><div class="quit-actions"><button data-choice="yes">Yes</button><button class="active" data-choice="no">No</button></div></div>`;document.body.appendChild(q);let buttons=[...q.querySelectorAll('button')],i=1;const set=n=>{i=(n+2)%2;buttons.forEach((b,j)=>b.classList.toggle('active',j===i));buttons[i].focus()};buttons.forEach((b,j)=>b.onclick=()=>{if(j===0){q.remove();onYes()}else q.remove()});q.onkeydown=e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'||e.key==='Tab'){e.preventDefault();set(i===0?1:0)}else if(e.key==='Enter'){e.preventDefault();buttons[i].click()}else if(e.key==='Escape'||e.key.toLowerCase()==='n'){e.preventDefault();q.remove()}else if(e.key.toLowerCase()==='y'){e.preventDefault();buttons[0].click()}};set(1)}
 function toast(t){let e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),2200)}
 function backupAll(){let out={version:'2.2',companies:DB.companies(),data:{}};out.companies.forEach(c=>out.data[c.id]=DB.data(c.id));let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));a.download='tabaja-erp-v2-2-backup.json';a.click()}
@@ -37,20 +71,21 @@ function setupFormKeyboard(form,onCancel){form.addEventListener('keydown',e=>{if
 function handleMenuKeys(e,root=document){const items=[...root.querySelectorAll('.menu-btn,.master-list button,.list-row')].filter(x=>x.offsetParent!==null);if(!items.length)return false;let i=items.indexOf(document.activeElement);if(i<0)i=items.findIndex(x=>x.classList.contains('active'));if(e.key==='ArrowDown'){e.preventDefault();items[(i+1+items.length)%items.length].focus();return true}if(e.key==='ArrowUp'){e.preventDefault();items[(i-1+items.length)%items.length].focus();return true}if(e.key==='Enter'&&items.includes(document.activeElement)){e.preventDefault();document.activeElement.click();return true}if(!e.ctrlKey&&!e.altKey&&!e.metaKey&&e.key.length===1){let k=e.key.toLowerCase(),match=items.find(x=>x.dataset.key===k);if(match){e.preventDefault();match.click();return true}}return false}
 document.addEventListener('keydown',e=>{
  if(document.getElementById('quitOv'))return;
+ if(document.getElementById('gotoOv'))return;
  const ov=document.getElementById('ov');
  if(e.key==='Escape'){
    e.preventDefault();
-   if(ov){ov.remove();if(S.screen==='ledgerList' || S.screen==='accountBooks')displayMenu();else if(S.screen==='displayMenu'||S.screen==='createMenu'||S.screen==='alterMenu')gateway();return}
+   if(ov){ov.remove();if(S.screen==='ledgerList')gateway();else if(S.screen==='accountBooks')displayMenu();else if(S.screen==='displayMenu'||S.screen==='createMenu'||S.screen==='alterMenu')gateway();return}
    if(S.screen==='ledgerDisplay'){ledgerList('display');return}
    if(S.screen==='chart'){gateway();return}
    if(S.screen==='gateway'){S.companyId=null;sessionStorage.removeItem('te_company');hub();return}
    if(S.screen==='hub'){quitPopup('Quit?',()=>{sessionStorage.clear();S.user=null;login()});return}
    if(S.screen==='companyForm'){hub();return}
  }
- if(e.key==='F4'){e.preventDefault();goToPopup();return}
+ if(e.key==='F4'||(e.key.toLowerCase()==='g'&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&!["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName))){e.preventDefault();goToPopup();return}
  if(ov){if(handleMenuKeys(e,ov))return}
  else if(handleMenuKeys(e,document))return;
- if(!ov&&S.screen==='gateway'&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&e.key.length===1){let map={c:createMenu,a:alterMenu,h:chart,d:displayMenu,g:goToPopup,q:()=>quitPopup('Close company?',()=>{S.companyId=null;sessionStorage.removeItem('te_company');hub()})};let fn=map[e.key.toLowerCase()];if(fn){e.preventDefault();fn()}}
+ if(!ov&&S.screen==='gateway'&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&e.key.length===1){let map={c:createMenu,a:alterMenu,h:chart,d:displayMenu,q:()=>quitPopup('Close company?',()=>{S.companyId=null;sessionStorage.removeItem('te_company');hub()})};let fn=map[e.key.toLowerCase()];if(fn){e.preventDefault();fn()}}
  if(!ov&&S.screen==='hub'&&e.key==='Enter'&&document.activeElement?.classList.contains('open-company')){e.preventDefault();document.activeElement.click()}
 });
 render();

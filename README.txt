@@ -16,3 +16,11 @@ New in V2.2:
 
 Upload index.html, app.js, styles.css and README.txt to the repository root.
 Then refresh with Ctrl+F5.
+
+
+V2.3 changes:
+- Built directly on V2.2 and keeps the same localStorage keys.
+- Go To opens as an overlay without replacing the current screen.
+- Search by report name or shortcut (DAL, DD, TB, CHA, CAL, AAL).
+- Esc from Ledger Selection returns directly to Gateway.
+- No keyboard-help side panel; original V2.2 colours and layout retained.
