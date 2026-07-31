@@ -1,0 +1,10 @@
+TABaja ERP Alpha 24 - focused keyboard test
+
+1. Enter at least two stock items.
+2. Reach Narration.
+3. Press Backspace repeatedly: Amount -> Rate -> Quantity -> Item.
+4. Erase the current Item name character by character.
+5. When the Item field is empty, press Backspace once more.
+
+Expected: the cursor immediately loads the previous committed item at Amount.
+It must NOT stop at End of List and must NOT jump to Purchase Ledger.
