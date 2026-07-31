@@ -1,0 +1,9 @@
+TABAJA ERP — ALPHA 30 TEST
+
+Quantity editing fix:
+1. Enter a stock item and type a Quantity, for example 125.
+2. While focus is still on Quantity, press Esc once.
+3. The full quantity must clear immediately and focus must remain in Quantity.
+4. Type a new value, for example 250. It must replace the old value, not append to it.
+5. Backspace must continue deleting one digit at a time.
+6. Pressing Esc again while Quantity is already empty continues normal reverse navigation.
