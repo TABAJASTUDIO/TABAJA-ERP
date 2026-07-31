@@ -1,0 +1,8 @@
+TABAJA ERP — ALPHA 26 TEST
+
+1. Enter at least one Purchase item and reach Narration.
+2. Backspace on empty Narration must jump directly to Amount of the last item.
+3. Backspace on Amount must open List of Stock Items on the current item.
+4. The blank placeholder row must show no CTN and must never receive reverse-navigation stops.
+5. Arrow Up from End of List to Create: Create must show a strong orange focus highlight.
+6. The voucher date must remain visible while the stock list is open.

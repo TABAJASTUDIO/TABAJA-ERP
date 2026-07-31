@@ -9,7 +9,7 @@ function company(){return DB.companies().find(x=>x.id===S.companyId)}
 function data(){let d=DB.data(S.companyId);if(!d){d=seed();DB.save(S.companyId,d)}if(!d.vouchers)d.vouchers=[];if(!d.stockItems)d.stockItems=[];return d}
 function saveData(d){DB.save(S.companyId,d)}
 function hk(label,key){const i=label.toLowerCase().indexOf(key.toLowerCase());if(i<0)return esc(label);return esc(label.slice(0,i))+`<u class="hotkey">${esc(label[i])}</u>`+esc(label.slice(i+1))}
-function shell(title,body){return `<div class="top"><div class="brand">Tabaja ERP <small>Alpha 24</small></div><div class="topnav"><button id="companyTop" data-top-menu="company">K: Company</button><button id="dataTop" data-top-menu="data">Y: Data</button><button id="exchangeTop" data-top-menu="exchange">Z: Exchange</button><button id="gotoTop">G: Go To</button><button id="importTop" data-top-menu="import">O: Import</button><button id="exportTop" data-top-menu="export">E: Export</button><button id="shareTop" data-top-menu="share">M: Share</button><button id="printTop" data-top-menu="print">P: Print</button><button id="helpTop" data-top-menu="help">F1: Help</button></div></div><div class="strip">${esc(title)}</div>${body}<div class="status"><span>Q: Quit</span><span>A: Accept</span><span>Esc: Back</span><span>Enter: Select</span></div>`}
+function shell(title,body){return `<div class="top"><div class="brand">Tabaja ERP <small>Alpha 26</small></div><div class="topnav"><button id="companyTop" data-top-menu="company">K: Company</button><button id="dataTop" data-top-menu="data">Y: Data</button><button id="exchangeTop" data-top-menu="exchange">Z: Exchange</button><button id="gotoTop">G: Go To</button><button id="importTop" data-top-menu="import">O: Import</button><button id="exportTop" data-top-menu="export">E: Export</button><button id="shareTop" data-top-menu="share">M: Share</button><button id="printTop" data-top-menu="print">P: Print</button><button id="helpTop" data-top-menu="help">F1: Help</button></div></div><div class="strip">${esc(title)}</div>${body}<div class="status"><span>Q: Quit</span><span>A: Accept</span><span>Esc: Back</span><span>Enter: Select</span></div>`}
 function render(){if(!S.user)return login();if(!S.companyId||!company())return hub();gateway()}
 function login(){S.screen='login';app.innerHTML=`<div class="login"><form class="loginbox" id="f"><h1>Tabaja ERP</h1><p>Personal Accounting System</p><div class="field"><label>User Name</label><input name="u" value="admin"></div><div class="field"><label>Password</label><input name="p" type="password" value="1234"></div><button class="btn primary" style="width:100%">Sign In</button><div class="note">First login: admin / 1234</div></form></div>`;f.onsubmit=e=>{e.preventDefault();let x=new FormData(f);if(x.get('u')==='admin'&&x.get('p')==='1234'){S.user='admin';sessionStorage.setItem('te_user','admin');hub()}else alert('Incorrect login')}}
 function hub(){S.screen='hub';S.stack=[];let cs=DB.companies();app.innerHTML=shell('Company Selection',`<main class="hub"><div class="toolbar hub-tools"><button class="btn primary" id="newC">${hk('Create Company','C')}</button><button class="btn" id="backup">${hk('Backup Data','B')}</button><button class="btn" id="restore">${hk('Restore Data','R')}</button><button class="btn" id="logout">${hk('Logout','L')}</button></div><div class="cards">${cs.length?cs.map((c,i)=>`<div class="card company-card"><h3>${esc(c.name)}</h3><p>${esc(c.country||'Sierra Leone')}</p><p>Financial year: ${esc(c.fy)}</p><button class="btn primary open-company" data-open="${c.id}">${hk('Open Company','O')}</button></div>`).join(''):'<div class="card"><h3>No company created</h3><p>Create your first company.</p></div>'}</div></main>`);newC.onclick=companyForm;logout.onclick=()=>{sessionStorage.clear();S.user=null;login()};backup.onclick=backupAll;restore.onclick=()=>restoreInput.click();document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openCompany(b.dataset.open));bindTopNav();setTimeout(()=>document.querySelector('.open-company')?.focus(),0)}
@@ -88,7 +88,7 @@ function voucherEntry(){
    <div class="voucher-single-row"><label>Purchase ledger</label>${veRawCell(3)}</div><div class="voucher-balance"><span>Current balance</span><b id="purchaseBalance">${veBalanceText(V.selected.purchaseLedger)}</b></div>
    <div class="voucher-item-head"><b>Name of Item</b><span>Quantity</span><span>Rate</span><span>per</span><span>Amount</span></div>
    <div id="voucherCommittedRows">${veCommittedRows()}</div>
-   <div class="voucher-item-row voucher-active-item-row"><div class="voucher-item-name-cell">${veRawCell(4)}<small id="voucherItemWeight">${veItemWeight()}</small></div><div class="voucher-qty-cell">${veRawCell(5)}<small id="voucherQtyWeight">${veQtyWeight()}</small></div>${veRawCell(6)}<div class="voucher-unit">${esc(V.selected.item?.unit||'CTN')}</div>${veRawCell(7)}</div>
+   <div class="voucher-item-row voucher-active-item-row"><div class="voucher-item-name-cell">${veRawCell(4)}<small id="voucherItemWeight">${veItemWeight()}</small></div><div class="voucher-qty-cell">${veRawCell(5)}<small id="voucherQtyWeight">${veQtyWeight()}</small></div>${veRawCell(6)}<div class="voucher-unit">${V.selected.item?esc(V.selected.item.unit||'CTN'):''}</div>${veRawCell(7)}</div>
    <div class="voucher-end-list" id="voucherEndList">◆ End of List</div>
   </div><div class="voucher-empty-space"></div>
   <div class="voucher-narration"><label>Narration</label>${veRawCell(8)}</div>
@@ -160,56 +160,49 @@ function veClearCurrentItem(){V.values.item='';V.values.qty='';V.values.rate='';
 function veBeforeInput(e){let c=VOUCHER_CELLS[Number(e.currentTarget.dataset.i)];if(c.kind==='number'&&e.data&&!/[0-9.\-]/.test(e.data))e.preventDefault();if(e.inputType==='insertParagraph')e.preventDefault()}
 function veInput(e){let i=Number(e.currentTarget.dataset.i),c=VOUCHER_CELLS[i];V.values[c.key]=e.currentTarget.textContent.replace(/\r?\n/g,'');if(c.kind==='ledger'||c.kind==='stock')veOpenContext(V.values[c.key],c.kind);if(c.key==='qty'||c.key==='rate')veRecalculate();else document.getElementById('voucherTotal')&&(document.getElementById('voucherTotal').textContent=veTotal())}
 function veCancelCurrentEdit(){let el=document.getElementById('veCell'+V.activeCell),c=VOUCHER_CELLS[V.activeCell];if(!el)return false;if(el.textContent!==V.editOriginal){el.textContent=V.editOriginal;V.values[c.key]=V.editOriginal;if(c.key==='supplierDate'){V.voucherDate=V.editOriginalDate;veSyncDateDisplays();el.textContent=V.editOriginal}if(c.key==='qty'||c.key==='rate')veRecalculate();vePlaceCaretEnd(el);return true}return false}
+function veOpenRestoredItemList(){
+ // Tally-style reverse path: from Amount, Backspace reopens the stock list
+ // on the current item. The voucher remains visible and the date stays in view.
+ V.reverseItemEdit=true;V.activeCell=4;V.focusId='veCell4';V.suppressContextOnce=false;
+ voucherEntry();
+ setTimeout(()=>{
+  V.activeCell=4;
+  const item=document.getElementById('veCell4');
+  item?.focus({preventScroll:true});vePlaceCaretEnd(item);
+  veOpenContext(String(V.values.item||''),'stock');
+ },0);
+ return true;
+}
 function veHandleCellEscape(cellIndex){
- // Always trust the voucher state, not the browser's transient focus after
- // a re-render. This removes the old fall-through to Purchase Ledger.
  cellIndex=Number.isInteger(cellIndex)?cellIndex:V.activeCell;
- V.activeCell=cellIndex;
- veCloseContext(false);
+ V.activeCell=cellIndex;veCloseContext(false);
 
- // Narration: return to the latest committed item. If no item exists, go to
- // the stock list on End of List.
+ // Narration goes directly to Amount of the latest completed item.
  if(cellIndex===8){
   veCommit();
   if(veRestoreLastCommittedItem())return true;
   return veReturnToEndOfListFromNarration();
  }
 
- // Blank yellow item row: first Esc MUST reopen the immediately preceding
- // completed item. It cannot cross into Purchase Ledger.
- if(cellIndex===4&&!String(V.values.item||'').trim()&&V.items.length){
-  return veRestoreLastCommittedItem();
- }
+ // A blank placeholder row is not a real voucher row.
+ if(cellIndex===4&&!String(V.values.item||'').trim()&&V.items.length)return veRestoreLastCommittedItem();
 
- // Protected reverse path for a restored item:
- // Amount -> Rate -> Quantity -> Item. At Item, keep the stock list open on
- // that exact item. Never continue to Purchase Ledger from this mode.
  if(V.editingItemIndex!==null||V.reverseItemEdit){
   V.reverseItemEdit=true;
-  if(cellIndex===7){veActivate(6);return true}
-  if(cellIndex===6){veActivate(5);return true}
-  if(cellIndex===5){veActivate(4);return true}
+  // From Amount, Tally reopens List of Stock Items immediately.
+  if(cellIndex===7)return veOpenRestoredItemList();
   if(cellIndex===4){
-   // Tally distinction: Backspace edits the Item name character-by-character,
-   // but Escape cancels the whole restored Item in one action.
+   // Escape cancels the complete selected item; Backspace still edits letters.
    V.values.item='';V.values.qty='';V.values.rate='';V.values.amount='';
    V.selected.item=null;V.editingItemIndex=null;V.reverseItemEdit=false;
    V.activeCell=4;V.focusId='veCell4';V.suppressContextOnce=false;
    voucherEntry();
-   setTimeout(()=>{
-    V.activeCell=4;
-    veOpenContext('','stock');
-    const item=document.getElementById('veCell4');
-    item?.focus({preventScroll:true});
-    vePlaceCaretEnd(item);
-   },0);
+   setTimeout(()=>{V.activeCell=4;veOpenContext('','stock');const item=document.getElementById('veCell4');item?.focus({preventScroll:true});vePlaceCaretEnd(item)},0);
    return true;
   }
  }
 
  if(veCancelCurrentEdit())return true;
- // Normal header navigation remains unchanged, but inventory row 4 is never
- // permitted to jump to ledger while completed items still exist.
  if(cellIndex===4&&V.items.length)return veRestoreLastCommittedItem();
  veMoveBack();return true;
 }
@@ -217,12 +210,13 @@ function veCellKeydown(e){
  const cellIndex=Number(e.currentTarget.dataset.i),cellDef=VOUCHER_CELLS[cellIndex],kind=cellDef.kind,panel=document.getElementById('voucherContextPanel');
  V.activeCell=cellIndex;
  if(e.key==='Backspace'){
-  // Tally reverse navigation: once a committed row is restored, Backspace
-  // moves through Amount -> Rate -> Quantity -> Item exactly like Arrow Up.
-  // Values are preserved until the cursor reaches the Item text itself.
-  if(V.reverseItemEdit&&(cellIndex===7||cellIndex===6||cellIndex===5)){
-   e.preventDefault();e.stopPropagation();
-   veHandleCellEscape(cellIndex);return
+  // Empty Narration returns directly to Amount of the latest completed item.
+  if(cellIndex===8&&e.currentTarget.textContent.length===0&&V.items.length){
+   e.preventDefault();e.stopPropagation();veRestoreLastCommittedItem();return
+  }
+  // Tally reverse path: Amount -> List of Stock Items immediately.
+  if(V.reverseItemEdit&&cellIndex===7){
+   e.preventDefault();e.stopPropagation();veOpenRestoredItemList();return
   }
   // While reversing through an existing inventory row, the Item cell is a
   // real text-edit field: Backspace removes one character at a time. This is
