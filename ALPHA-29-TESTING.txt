@@ -1,0 +1,7 @@
+TABAJA ERP — ALPHA 29 TEST
+
+Narration Escape behaviour:
+1. Type any narration text.
+2. Backspace must delete one character at a time.
+3. Press Esc while narration contains text: the full narration must clear instantly and focus must remain in Narration.
+4. Press Esc again while narration is empty: return to the Amount of the latest item.

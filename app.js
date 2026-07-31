@@ -191,8 +191,20 @@ function veHandleCellEscape(cellIndex){
  cellIndex=Number.isInteger(cellIndex)?cellIndex:V.activeCell;
  V.activeCell=cellIndex;veCloseContext(false);
 
- // Narration always goes directly to Amount of the latest completed item.
- if(cellIndex===8)return veBackFromNarration();
+ // Narration behaves like Tally: Backspace edits one character at a time,
+ // while Escape clears the whole narration in one action. If it is already
+ // empty, Escape continues the reverse path to the latest item's Amount.
+ if(cellIndex===8){
+  const narration=document.getElementById('veCell8');
+  const text=String(narration?.textContent??V.values.narration??'');
+  if(text.length){
+   V.values.narration='';
+   if(narration){narration.textContent='';narration.focus({preventScroll:true});vePlaceCaretEnd(narration)}
+   V.editOriginal='';
+   return true;
+  }
+  return veBackFromNarration();
+ }
 
  // A blank placeholder row is not a real voucher row.
  if(cellIndex===4&&!String(V.values.item||'').trim()&&V.items.length)return veRestoreLastCommittedItem();
