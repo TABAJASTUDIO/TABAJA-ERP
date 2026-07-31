@@ -1,0 +1,11 @@
+TABAJA ERP — ALPHA 27 TEST
+
+Stock Item Creation keyboard flow:
+1. Open Create from List of Stock Items.
+2. Enter moves: Name -> Unit -> Weight per Unit -> Opening Quantity.
+3. Press Enter on Opening Quantity.
+4. “Accept?” appears with Yes selected.
+5. Press Enter to save and return to the voucher.
+6. On Accept?, arrows switch between Yes and No.
+7. Esc on Accept? returns to Opening Quantity without closing creation.
+8. Ctrl+A still saves immediately from any field.

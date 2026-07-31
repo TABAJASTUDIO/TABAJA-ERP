@@ -322,3 +322,12 @@ button:focus,input:focus,select:focus,textarea:focus{outline:2px solid #f5b13f;o
 .ve-create-action.active{background:#ed9f2f;color:#17120a;border-color:#8b560e;outline:2px solid #ffe3a6;outline-offset:-2px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.55)}
 .ve-create-action:focus-visible{outline:2px solid #fff;outline-offset:-2px}
 .voucher-active-item-row .voucher-unit:empty{background:transparent}
+
+/* Alpha 27 — Tally-style repeated Enter flow and Accept? confirmation */
+.quick-master{position:relative}
+.quick-accept{position:absolute;right:10px;bottom:10px;width:150px;background:#f8f7ed;border:1px solid #778794;box-shadow:0 5px 16px #0002;padding:10px;z-index:2}
+.quick-accept[hidden]{display:none}
+.quick-accept-title{font-size:17px;margin-bottom:8px;text-align:center}
+.quick-accept-options{display:flex;justify-content:center;gap:6px}
+.quick-accept-options button{min-width:52px;border:0;background:transparent;padding:5px 9px;font:inherit}
+.quick-accept-options button.active,.quick-accept-options button:focus{background:var(--orange);outline:1px solid #8f6e31}
