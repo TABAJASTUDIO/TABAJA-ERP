@@ -1,0 +1,9 @@
+TABAJA ERP — ALPHA 28 TEST
+
+Fix tested in this build:
+1. Add Item 1 and go to Narration. Backspace must return to Item 1 Amount.
+2. Add Item 2 and go to Narration. Backspace must return immediately to Item 2 Amount.
+3. Repeat with Item 3. No Arrow Up should be required.
+4. From Amount, Backspace must still reopen List of Stock Items.
+
+The fix resolves the latest committed item from voucher data on every return from Narration, instead of relying on stale browser focus.

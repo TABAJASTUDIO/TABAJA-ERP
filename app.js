@@ -173,16 +173,26 @@ function veOpenRestoredItemList(){
  },0);
  return true;
 }
+function veBackFromNarration(){
+ // Always resolve the latest voucher line from the data state, not from the
+ // browser's last focused cell. This keeps Backspace reliable after every
+ // newly-added item, even when focus was rebuilt while moving to Narration.
+ veCommit();
+ if(String(V.values.item||'').trim() && Number(V.values.qty||0)){
+  veFinalizeCurrentItem();
+ }
+ // A stale reverse flag must never block the latest committed row.
+ V.reverseItemEdit=false;
+ V.editingItemIndex=null;
+ if(veRestoreLastCommittedItem())return true;
+ return veReturnToEndOfListFromNarration();
+}
 function veHandleCellEscape(cellIndex){
  cellIndex=Number.isInteger(cellIndex)?cellIndex:V.activeCell;
  V.activeCell=cellIndex;veCloseContext(false);
 
- // Narration goes directly to Amount of the latest completed item.
- if(cellIndex===8){
-  veCommit();
-  if(veRestoreLastCommittedItem())return true;
-  return veReturnToEndOfListFromNarration();
- }
+ // Narration always goes directly to Amount of the latest completed item.
+ if(cellIndex===8)return veBackFromNarration();
 
  // A blank placeholder row is not a real voucher row.
  if(cellIndex===4&&!String(V.values.item||'').trim()&&V.items.length)return veRestoreLastCommittedItem();
@@ -211,8 +221,8 @@ function veCellKeydown(e){
  V.activeCell=cellIndex;
  if(e.key==='Backspace'){
   // Empty Narration returns directly to Amount of the latest completed item.
-  if(cellIndex===8&&e.currentTarget.textContent.length===0&&V.items.length){
-   e.preventDefault();e.stopPropagation();veRestoreLastCommittedItem();return
+  if(cellIndex===8&&e.currentTarget.textContent.length===0){
+   e.preventDefault();e.stopPropagation();veBackFromNarration();return
   }
   // Tally reverse path: Amount -> List of Stock Items immediately.
   if(V.reverseItemEdit&&cellIndex===7){
