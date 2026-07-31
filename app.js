@@ -190,12 +190,19 @@ function veHandleCellEscape(cellIndex){
   if(cellIndex===6){veActivate(5);return true}
   if(cellIndex===5){veActivate(4);return true}
   if(cellIndex===4){
-   const current=String(V.values.item||'').trim();
-   V.activeCell=4;
-   veOpenContext(current,'stock');
-   const idx=VE_LIST.items.findIndex(x=>x.name===current);
-   if(idx>=0){VE_LIST.index=idx;VE_LIST.focusZone='items';veDrawList()}
-   document.getElementById('veCell4')?.focus({preventScroll:true});
+   // Tally distinction: Backspace edits the Item name character-by-character,
+   // but Escape cancels the whole restored Item in one action.
+   V.values.item='';V.values.qty='';V.values.rate='';V.values.amount='';
+   V.selected.item=null;V.editingItemIndex=null;V.reverseItemEdit=false;
+   V.activeCell=4;V.focusId='veCell4';V.suppressContextOnce=false;
+   voucherEntry();
+   setTimeout(()=>{
+    V.activeCell=4;
+    veOpenContext('','stock');
+    const item=document.getElementById('veCell4');
+    item?.focus({preventScroll:true});
+    vePlaceCaretEnd(item);
+   },0);
    return true;
   }
  }

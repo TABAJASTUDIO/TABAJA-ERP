@@ -1,0 +1,13 @@
+TABAJA ERP — ALPHA 25 TEST
+
+Purchase Voucher — restored Item behavior:
+
+1. Enter at least two stock items.
+2. Go to Narration.
+3. Press Backspace/Escape to return through Amount, Rate, Quantity, then Item.
+4. At Name of Item:
+   - Backspace must still delete one character at a time.
+   - Escape must cancel/clear the whole current item immediately.
+5. The active yellow row should remain on a blank Name of Item field and the Stock Item list should reopen.
+
+No other workflow was intentionally changed in this build.
